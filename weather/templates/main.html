@@ -1,0 +1,53 @@
+<style>
+  .layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .layout > div {
+    margin-bottom: 20px;
+  }
+
+  .currentTemperatures {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+  .currentTemperatures > div {
+    margin: 0 20px;
+    text-align: center;
+  }
+  .temperatureCircle {
+    width: 118px;
+    height: 118px;
+    border-radius: 71px;
+    border: 6px solid #000;
+    font-size: 65px;
+    color: #000;
+    line-height: 118px;
+    text-align: center;
+    background: #fff;
+    box-shadow: 0 0 0 2px #fff;
+  }
+  .lowHigh {
+    line-height: 1em;
+    text-transform: uppercase;
+  }
+</style>
+
+<div class="layout">
+  <div class="normal medium">{{summary}}</div>
+
+  {{!-- current temperatures --}}
+  <div class="currentTemperatures">
+    <div class="lowHigh">
+      &nbsp;{{low}}°
+      <div>low</div>
+    </div>
+    <div class="temperatureCircle">{{temperature}}</div>
+    <div class="lowHigh">
+      &nbsp;{{high}}°
+      <div>high</div>
+    </div>
+  </div>
+</div>

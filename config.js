@@ -13,9 +13,6 @@ var config = {
 
   modules: [
     {
-      module: 'alert',
-    },
-    {
       module: 'clock',
       position: 'top_left',
       config: {
