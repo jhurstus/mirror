@@ -55,6 +55,21 @@
     position: absolute;
     margin: -13px 0 0 -45px;
   }
+
+  .forecastSummary {
+    width: 315px;
+  }
+  .forecastSummaryTitle {
+    text-transform: uppercase;
+    text-align: left;
+    font-weight: bold;
+    color: #fff;
+  }
+  .forecastSummaryText {
+    font-size: 0.75em;
+    text-align: left;
+    line-height: 1.5em;
+  }
 </style>
 
 <div class="layout">
@@ -88,4 +103,19 @@
       {{cloudCover}}%
     </div>
   </div>
+
+  {{!-- forecast summaries --}}
+  <div class="forecastSummary" style="margin-top: 50px">
+    <div class="forecastSummaryTitle small">next hour</div>
+    <div class="forecastSummaryText">{{hourSummary}}</div>
+  </div>
+  <div class="forecastSummary">
+    <div class="forecastSummaryTitle small">next 24 hours</div>
+    <div class="forecastSummaryText">{{daySummary}}</div>
+  </div>
+  <div class="forecastSummary">
+    <div class="forecastSummaryTitle small">next 7 days</div>
+    <div class="forecastSummaryText">{{weekSummary}}</div>
+  </div>
+
 </div>

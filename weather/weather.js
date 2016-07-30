@@ -68,6 +68,11 @@ Module.register("weather", {
     r.low = Math.round(tomorrow.apparentTemperatureMin);
     r.high = Math.round(tomorrow.apparentTemperatureMax);
 
+    // forecast summaries
+    r.hourSummary = data.minutely.summary;
+    r.daySummary = data.hourly.summary;
+    r.weekSummary = data.daily.summary;
+
     return r;
   },
 
@@ -87,6 +92,12 @@ Module.register("weather", {
     }
     if (!data.daily || !data.daily.data || !data.daily.data[0]) {
       Log.info('missing tomorrow\'s forecast');
+      return false;
+    }
+    if (!data.minutely || !data.minutely.summary ||
+        !data.hourly || !data.hourly.summary ||
+        !data.daily || !data.daily.summary) {
+      Log.info('missing forecast summaries');
       return false;
     }
 
