@@ -33,6 +33,28 @@
     line-height: 1em;
     text-transform: uppercase;
   }
+
+  .conditionDetails {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+  .conditionDetails > div {
+    text-align: center;
+    padding-left: 45px;
+    padding-right: 30px;
+  }
+  .icon {
+    position: relative;
+  }
+  .icon > img {
+    -webkit-filter: invert(1);
+    filter: invert(1);
+    height: 50px;
+    width: 50px;
+    position: absolute;
+    margin: -13px 0 0 -45px;
+  }
 </style>
 
 <div class="layout">
@@ -48,6 +70,22 @@
     <div class="lowHigh">
       &nbsp;{{high}}°
       <div>high</div>
+    </div>
+  </div>
+
+  {{!-- current condition details --}}
+  <div class="conditionDetails normal small">
+    <div>
+      <span class="icon"><img src="modules/hurst/weather/public/icons/Wind.svg"></span>
+      {{windSpeed}} mph
+    </div>
+    <div>
+      <span class="icon"><img src="modules/hurst/weather/public/icons/Umbrella.svg"></span>
+      {{precipProbability}}%
+    </div>
+    <div>
+      <span class="icon"><img src="modules/hurst/weather/public/icons/Cloud.svg"></span>
+      {{cloudCover}}%
     </div>
   </div>
 </div>

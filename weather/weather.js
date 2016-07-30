@@ -61,6 +61,9 @@ Module.register("weather", {
     // current conditions
     r.temperature = Math.round(data.currently.apparentTemperature);
     r.summary = data.currently.summary;
+    r.windSpeed = Math.round(data.currently.windSpeed);
+    r.precipProbability = Math.round(100 * data.currently.precipProbability);
+    r.cloudCover = Math.round(100 * data.currently.cloudCover);
     var tomorrow = data.daily.data[0];
     r.low = Math.round(tomorrow.apparentTemperatureMin);
     r.high = Math.round(tomorrow.apparentTemperatureMax);
