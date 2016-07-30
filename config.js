@@ -21,6 +21,12 @@ var config = {
       config: {
         displaySeconds: false
       }
+    },
+    {
+      module: 'hurst/weather',
+      position: 'top_right',
+      config: {
+      }
     }
   ]
 };
