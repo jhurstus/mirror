@@ -78,6 +78,46 @@ Module.register("weather", {
     r.daySummary = data.hourly.summary;
     r.weekSummary = data.daily.summary;
 
+    // daily forecast
+    r.dailyForecasts = [];
+    var weeklyMin = 1000;
+    var weeklyMax = -1;
+    var opacity = 0.75;
+    // skip day 0 (today) since it's covered elsewhere in the UI
+    for (var i = 1; i < 7; i++) {
+      var day = data.daily.data[i];
+      r.dailyForecasts.push({
+        low: Math.round(day.apparentTemperatureMin),
+        high: Math.round(day.apparentTemperatureMax),
+        iconUrl: this.getIconUrl(day.icon),
+        opacity: opacity,
+        day: new Date(day.sunriseTime * 1000).toDateString().replace(/\s.*/, '')
+      });
+      weeklyMin = Math.min(weeklyMin, day.apparentTemperatureMin);
+      weeklyMax = Math.max(weeklyMin, day.apparentTemperatureMax);
+      opacity -= 0.1;
+    }
+
+    // calculate offsets for temperature bars in daily forecasts
+    weeklyMin = Math.round(weeklyMin);
+    weeklyMax = Math.round(weeklyMax);
+    var temperatureRange = weeklyMax - weeklyMin;
+    // Size of temperature bar container and hi/lo label text.
+    // These values must be updated if temp bar styles/layout change. :/
+    var cellWidth = 255;
+    var tempTextWidth = 50;
+    for (var i = 0; i < r.dailyForecasts.length; i++) {
+      var barWidth = Math.round(
+          (cellWidth - 2 * tempTextWidth)  *
+          ((r.dailyForecasts[i].high - r.dailyForecasts[i].low)
+           / temperatureRange));
+      var rowOffset = Math.round(
+          (cellWidth - 2 * tempTextWidth)  *
+          ((r.dailyForecasts[i].low - weeklyMin) / temperatureRange));
+      r.dailyForecasts[i].barWidth = barWidth;
+      r.dailyForecasts[i].barOffset = rowOffset;
+    }
+
     return r;
   },
 
@@ -95,8 +135,8 @@ Module.register("weather", {
       Log.info('missing current weather data');
       return false;
     }
-    if (!data.daily || !data.daily.data || !data.daily.data[0]) {
-      Log.info('missing tomorrow\'s forecast');
+    if (!data.daily || !data.daily.data || data.daily.data.length < 7) {
+      Log.info('missing daily forecasts');
       return false;
     }
     if (!data.minutely || !data.minutely.summary ||
@@ -107,6 +147,25 @@ Module.register("weather", {
     }
 
     return true;
+  },
+
+  // Maps forecast.io 'icon' enum values to actual icon filenames.
+  // See https://developer.forecast.io/docs/v2 for icon enum definition.
+  getIconUrl: function(iconName) {
+    var iconMap = {
+      'clear-day': 'Sun.svg',
+      'clear-night': 'Moon-Full.svg',
+      'rain': 'Cloud-Rain.svg',
+      'snow': 'Cloud-Snow.svg',
+      'sleet': 'Cloud-Hail.svg',
+      'wind': 'Cloud-Wind-Sun.svg',
+      'fog': 'Cloud-Fog-Alt.svg',
+      'cloudy': 'Cloud.svg',
+      'partly-cloudy-day': 'Cloud-Sun.svg',
+      'partly-cloudy-night': 'Cloud-Moon.svg'
+    };
+    var iconFile = iconMap[iconName] || 'Sun.svg';
+    return 'modules/hurst/weather/public/icons/' + iconFile;
   },
 
   socketNotificationReceived: function(notification, payload) {

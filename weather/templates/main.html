@@ -84,6 +84,41 @@
     text-align: left;
     line-height: 1.5em;
   }
+
+  .weekly {
+    width: 315px;
+  }
+  .weekly td {
+    font-size: 0.5em;
+    padding: 0;
+    line-height: 28px;
+  }
+  .weekly .day {
+    width: 30px;
+  }
+  .weekly .wIcon {
+    text-align: left;
+    width: 30px;
+    position: relative;
+  }
+  .weekly .wIcon img {
+    -webkit-filter: invert(1);
+    filter: invert(1);
+    width: 35px;
+    height: 35px;
+    position: absolute;
+    top: -3px;
+    left: -4px;
+  }
+  .weekly .range {
+    text-align: left;
+  }
+  .temperatureBar {
+    background-color: white;
+    height: 13px;
+    display: inline-block;
+    border-radius: 6px;
+  }
 </style>
 
 <div class="layout">
@@ -144,6 +179,23 @@
   <div class="forecastSummary">
     <div class="forecastSummaryTitle small">next 7 days</div>
     <div class="forecastSummaryText">{{weekSummary}}</div>
+  </div>
+
+  {{!-- weekly forecast --}}
+  <div class="weekly">
+    <table>
+    {{#each dailyForecasts}}
+      <tr style="opacity: {{opacity}}">
+        <td class="day">{{day}}</td>
+        <td class="wIcon"><img src="{{iconUrl}}"></td>
+        <td class="range" style="padding-left:{{barOffset}}px">
+          {{low}}°
+          <div class="temperatureBar" style="width:{{barWidth}}px"></div>
+          {{high}}°
+        </td>
+      </tr>
+    {{/each}}
+    </table>
   </div>
 
 </div>
