@@ -2,7 +2,11 @@ Module.register("weather", {
   defaults: {
     // Whether to load canned weather data from a stub response (for development
     // and testing).
-    debug: true
+    debug: true,
+    // Whether to show a textual forecast summary.
+    showForecastSummary: false,
+    // Whether to show weekly forecast data.
+    showWeeklyForecast: false
   },
 
   start: function() {
@@ -74,48 +78,53 @@ Module.register("weather", {
     }
 
     // forecast summaries
-    r.hourSummary = data.minutely.summary;
-    r.daySummary = data.hourly.summary;
-    r.weekSummary = data.daily.summary;
-
-    // daily forecast
-    r.dailyForecasts = [];
-    var weeklyMin = 1000;
-    var weeklyMax = -1;
-    var opacity = 0.75;
-    // skip day 0 (today) since it's covered elsewhere in the UI
-    for (var i = 1; i < 7; i++) {
-      var day = data.daily.data[i];
-      r.dailyForecasts.push({
-        low: Math.round(day.apparentTemperatureMin),
-        high: Math.round(day.apparentTemperatureMax),
-        iconUrl: this.getIconUrl(day.icon),
-        opacity: opacity,
-        day: new Date(day.sunriseTime * 1000).toDateString().replace(/\s.*/, '')
-      });
-      weeklyMin = Math.min(weeklyMin, day.apparentTemperatureMin);
-      weeklyMax = Math.max(weeklyMin, day.apparentTemperatureMax);
-      opacity -= 0.1;
+    if (this.config.showForecastSummary) {
+      r.hourSummary = data.minutely.summary;
+      r.daySummary = data.hourly.summary;
+      r.weekSummary = data.daily.summary;
     }
 
-    // calculate offsets for temperature bars in daily forecasts
-    weeklyMin = Math.round(weeklyMin);
-    weeklyMax = Math.round(weeklyMax);
-    var temperatureRange = weeklyMax - weeklyMin;
-    // Size of temperature bar container and hi/lo label text.
-    // These values must be updated if temp bar styles/layout change. :/
-    var cellWidth = 255;
-    var tempTextWidth = 50;
-    for (var i = 0; i < r.dailyForecasts.length; i++) {
-      var barWidth = Math.round(
-          (cellWidth - 2 * tempTextWidth)  *
-          ((r.dailyForecasts[i].high - r.dailyForecasts[i].low)
-           / temperatureRange));
-      var rowOffset = Math.round(
-          (cellWidth - 2 * tempTextWidth)  *
-          ((r.dailyForecasts[i].low - weeklyMin) / temperatureRange));
-      r.dailyForecasts[i].barWidth = barWidth;
-      r.dailyForecasts[i].barOffset = rowOffset;
+    // daily forecast
+    if (this.config.showWeeklyForecast) {
+      r.dailyForecasts = [];
+      var weeklyMin = 1000;
+      var weeklyMax = -1;
+      var opacity = 0.75;
+      // skip day 0 (today) since it's covered elsewhere in the UI
+      for (var i = 1; i < 7; i++) {
+        var day = data.daily.data[i];
+        r.dailyForecasts.push({
+          low: Math.round(day.apparentTemperatureMin),
+          high: Math.round(day.apparentTemperatureMax),
+          iconUrl: this.getIconUrl(day.icon),
+          opacity: opacity,
+          day: new Date(day.sunriseTime * 1000)
+              .toDateString().replace(/\s.*/, '')
+        });
+        weeklyMin = Math.min(weeklyMin, day.apparentTemperatureMin);
+        weeklyMax = Math.max(weeklyMin, day.apparentTemperatureMax);
+        opacity -= 0.1;
+      }
+
+      // calculate offsets for temperature bars in daily forecasts
+      weeklyMin = Math.round(weeklyMin);
+      weeklyMax = Math.round(weeklyMax);
+      var temperatureRange = weeklyMax - weeklyMin;
+      // Size of temperature bar container and hi/lo label text.
+      // These values must be updated if temp bar styles/layout change. :/
+      var cellWidth = 255;
+      var tempTextWidth = 50;
+      for (var i = 0; i < r.dailyForecasts.length; i++) {
+        var barWidth = Math.round(
+            (cellWidth - 2 * tempTextWidth)  *
+            ((r.dailyForecasts[i].high - r.dailyForecasts[i].low)
+             / temperatureRange));
+        var rowOffset = Math.round(
+            (cellWidth - 2 * tempTextWidth)  *
+            ((r.dailyForecasts[i].low - weeklyMin) / temperatureRange));
+        r.dailyForecasts[i].barWidth = barWidth;
+        r.dailyForecasts[i].barOffset = rowOffset;
+      }
     }
 
     return r;
