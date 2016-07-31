@@ -56,6 +56,20 @@
     margin: -13px 0 0 -45px;
   }
 
+  .alerts {
+    text-align: left;
+    width: 315px;
+  }
+  .alerts li {
+    list-style-type: none;
+    color: #f88;
+    margin-bottom: 1em;
+  }
+  .alerts img {
+    position: absolute;
+    margin-left: -40px;
+  }
+
   .forecastSummary {
     width: 315px;
   }
@@ -103,6 +117,20 @@
       {{cloudCover}}%
     </div>
   </div>
+
+  {{!-- weather alerts --}}
+  {{#if alerts}}
+  <div class="alerts small">
+    <ul>
+      {{#each alerts}}
+        <li>
+          <img src="modules/hurst/weather/public/icons/warning.svg">
+          {{title}}
+        </li>
+      {{/each}}
+    </ul>
+  </div>
+  {{/if}}
 
   {{!-- forecast summaries --}}
   <div class="forecastSummary" style="margin-top: 50px">

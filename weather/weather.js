@@ -68,6 +68,11 @@ Module.register("weather", {
     r.low = Math.round(tomorrow.apparentTemperatureMin);
     r.high = Math.round(tomorrow.apparentTemperatureMax);
 
+    // weather alerts
+    if (data.alerts && data.alerts.length) {
+      r.alerts = data.alerts.map(function (a) { return {title: a.title}; });
+    }
+
     // forecast summaries
     r.hourSummary = data.minutely.summary;
     r.daySummary = data.hourly.summary;
