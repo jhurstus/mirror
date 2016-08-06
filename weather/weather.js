@@ -150,7 +150,7 @@ Module.register("weather", {
     if (this.config.showForecastSummary) {
       r.hourSummary = data.minutely.summary;
       r.daySummary = data.hourly.summary;
-      r.weekSummary = data.daily.summary;
+      r.weekSummary = data.daily.summary.replace('°F', '°');
     }
 
     // daily forecast
