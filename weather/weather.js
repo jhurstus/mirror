@@ -3,12 +3,6 @@ Module.register("weather", {
     // Whether to load canned weather data from a stub response (for development
     // and testing).
     debug: true,
-    // Only show 24 hour precipitation graph if the highest hourly probability
-    // is greater than or equal to this number, expressed as a float in the
-    // range [0, 1].  For example, a value of 0.2 would cause the graph to only
-    // be shown if there's at least a 20% chance of rain sometime in the coming
-    // day.
-    precipitationThreshold: 0.25,
     // Whether to show a textual forecast summary.
     showForecastSummary: false,
     // Whether to show weekly forecast data.
@@ -92,7 +86,7 @@ Module.register("weather", {
     r.hourLabels = [];
     r.temperatures = [];
     r.windSpeeds = [];
-    var precipitationProbabilities = [];
+    r.precipitationProbabilities = [];
     for (var i = 0; i < 24; i++) {
       var hour = data.hourly.data[i];
       var h = new Date(hour.time * 1000);
@@ -102,14 +96,9 @@ Module.register("weather", {
       } else {
         r.hourLabels.push('');
       }
-      precipitationProbabilities.push(hour.precipProbability);
+      r.precipitationProbabilities.push(hour.precipProbability);
       r.temperatures.push(Math.round(hour.apparentTemperature));
       r.windSpeeds.push(Math.round(hour.windSpeed));
-    }
-    var maxPrecipitationProb = precipitationProbabilities.reduce(
-        (x, y) => {return Math.max(x, y)}, 0);
-    if (maxPrecipitationProb >= this.config.precipitationThreshold) {
-      r.precipitationProbabilities = precipitationProbabilities;
     }
 
     // forecast summaries
@@ -220,42 +209,94 @@ Module.register("weather", {
   // This must be done outside templates/getViewModel because the charts API is
   // asynchronous.
   drawCharts: function() {
-    if (this.viewModel.precipitationProbabilities) {
-      var data = [['hour', 'precipitation']];
-      for (var i = 0; i < this.viewModel.hourLabels.length; i++) {
-        data.push([
-            this.viewModel.hourLabels[i],
-            this.viewModel.precipitationProbabilities[i]]);
-      }
-      var options = {
-        areaOpacity: 1,
-        axisTitlesPosition: 'omit',
-        backgroundColor: 'transparent',
-        chartArea: {left: 0, top: 0, width: '100%', height: '70%'},
-        enableInteractivity: false,
-        fontName: 'Roboto Condensed',
-        fontSize: 11,
-        hAxis: {
-          textPosition: 'out',
-          slantedText: true,
-          textStyle: {color: '#ffffff'},
-          allowContainerBoundaryTextCufoff: true,
-          showTextEvery: 1
-        },
-        vAxis: {
-          baselineColor: 'transparent',
-          gridlines: {color: '#ccc', count: 2},
-          minorGridlines: {color: '#333', count: 3},
-          minValue: 0,
-          maxValue: 1
-        },
-        legend: {position: 'none'},
-        pointsVisible: false
-      };
-      var chart = new google.visualization.AreaChart(
-          this.dom.querySelector('#precipitationChart'));
-      chart.draw(google.visualization.arrayToDataTable(data), options);
+    var windMin = 0;
+    var windMax = 20;
+    var tempMin = 40;
+    var tempMax = 90;
+
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'hour');
+    data.addColumn('number', 'temperature');
+    data.addColumn({type:'string', role:'annotation'});
+    data.addColumn('number', 'windspeeds');
+    data.addColumn({type:'string', role:'annotation'});
+    data.addColumn('number', 'precipitation');
+    for (var i = 0; i < this.viewModel.hourLabels.length; i++) {
+      windMax = Math.max(windMax, this.viewModel.windSpeeds[i]);
+      tempMin = Math.min(tempMin, this.viewModel.temperatures[i]);
+      tempMax = Math.max(tempMax, this.viewModel.temperatures[i]);
+      data.addRows([[
+          this.viewModel.hourLabels[i],
+          this.viewModel.temperatures[i],
+          i % 6 == 1 ? this.viewModel.temperatures[i] + '°' : null,
+          this.viewModel.windSpeeds[i],
+          i % 6 == 4 ? this.viewModel.windSpeeds[i] + 'mph' : null,
+          this.viewModel.precipitationProbabilities[i]
+      ]]);
     }
+
+    var options = {
+      areaOpacity: 1,
+      axisTitlesPosition: 'omit',
+      backgroundColor: 'transparent',
+      chartArea: {left: 0, top: 0, width: '100%', height: '70%'},
+      curveType: 'function',
+      enableInteractivity: false,
+      fontName: 'Roboto Condensed',
+      fontSize: 11,
+      hAxis: {
+        textPosition: 'out',
+        slantedText: true,
+        textStyle: {color: '#ffffff'},
+        allowContainerBoundaryTextCufoff: true,
+        showTextEvery: 1
+      },
+      legend: {position: 'none'},
+      pointsVisible: false,
+      seriesType: 'line',
+      series: {
+        0: {
+          color: '#ff6666',
+          targetAxisIndex: 0
+        },
+        1: {
+          color: '#bbbbbb',
+          targetAxisIndex: 1
+        },
+        2: {
+          color: '#222266',
+          lineWidth: 0,
+          targetAxisIndex: 2,
+          type: 'area'
+        }
+      },
+      vAxes: {
+        0: {
+          minValue: tempMin,
+          maxValue: tempMax,
+          targetAxisIndex: 0
+        },
+        1: {
+          minValue: windMin,
+          maxValue: windMax,
+          targetAxisIndex: 1
+        },
+        2: {
+          minValue: 0,
+          maxValue: 1,
+          targetAxisIndex: 2
+        }
+      },
+      vAxis: {
+        baselineColor: 'transparent',
+        gridlines: {color: '#333', count: 2},
+        minorGridlines: {color: '#333', count: 3}
+      }
+    };
+
+    var chart = new google.visualization.ComboChart(
+        this.dom.querySelector('#chart'));
+    chart.draw(data, options);
   },
 
   socketNotificationReceived: function(notification, payload) {
