@@ -135,7 +135,7 @@ Module.register("weather", {
     for (var i = 0; i < 24; i++) {
       var hour = data.hourly.data[i];
       var h = new Date(hour.time * 1000);
-      if (h.getHours() % 4 == 0) {
+      if (i % 4 == 2) {
         r.hourLabels.push(new Date(hour.time * 1000)
             .toLocaleTimeString().replace(/:\d\d:\d\d\s/, '').toLowerCase());
       } else {
