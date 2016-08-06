@@ -127,7 +127,7 @@ Module.register("weather", {
         });
         weeklyMin = Math.min(weeklyMin, day.apparentTemperatureMin);
         weeklyMax = Math.max(weeklyMin, day.apparentTemperatureMax);
-        opacity -= 0.1;
+        opacity -= 0.13;
       }
 
       // calculate offsets for temperature bars in daily forecasts

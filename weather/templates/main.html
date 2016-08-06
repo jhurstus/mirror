@@ -81,26 +81,27 @@
 
   .chartContainer {
     position: relative;
-    width: 300px;
+    width: 270px;
     height: 150px;
+    left: -20px;
   }
   .chartContainer .tempIcon {
     position: absolute;
-    top: -17px;
+    top: -12px;
     right: -45px;
     width: 50px;
     height: 50px;
   }
   .chartContainer .windIcon {
     position: absolute;
-    top: 10px;
+    top: 15px;
     right: -45px;
     width: 50px;
     height: 50px;
   }
   .chartContainer .precipIcon {
     position: absolute;
-    top: 39px;
+    top: 44px;
     right: -45px;
     width: 50px;
     height: 50px;
@@ -127,6 +128,8 @@
 
   .weekly {
     width: 315px;
+    position: relative;
+    left: 10px;
   }
   .weekly td {
     font-size: 0.5em;
@@ -158,6 +161,10 @@
     height: 13px;
     display: inline-block;
     border-radius: 6px;
+  }
+
+  .sectionSep {
+    margin-top: 40px;
   }
 </style>
 
@@ -207,18 +214,9 @@
   </div>
   {{/if}}
 
-  {{!-- precipitation, temperature, and wind chart --}}
-  <div class="chartContainer">
-    <img src="modules/hurst/weather/public/icons/tempIcon.svg" class="tempIcon">
-    <img src="modules/hurst/weather/public/icons/windIcon.svg" class="windIcon">
-    <img src="modules/hurst/weather/public/icons/precipIcon.svg" class="precipIcon">
-    <div id="chart">
-    </div>
-  </div>
-
   {{!-- forecast summaries --}}
   {{#if hourSummary}}
-  <div class="forecastSummary" style="margin-top: 50px">
+  <div class="forecastSummary sectionSep">
     <div class="forecastSummaryTitle small">next hour</div>
     <div class="forecastSummaryText">{{hourSummary}}</div>
   </div>
@@ -232,9 +230,18 @@
   </div>
   {{/if}}
 
+  {{!-- precipitation, temperature, and wind chart --}}
+  <div class="chartContainer sectionSep">
+    <img src="modules/hurst/weather/public/icons/tempIcon.svg" class="tempIcon">
+    <img src="modules/hurst/weather/public/icons/windIcon.svg" class="windIcon">
+    <img src="modules/hurst/weather/public/icons/precipIcon.svg" class="precipIcon">
+    <div id="chart">
+    </div>
+  </div>
+
   {{!-- weekly forecast --}}
   {{#if dailyForecasts}}
-  <div class="weekly">
+  <div class="weekly sectionSep">
     <table>
     {{#each dailyForecasts}}
       <tr style="opacity: {{opacity}}">
