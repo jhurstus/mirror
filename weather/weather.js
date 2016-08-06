@@ -4,9 +4,9 @@ Module.register("weather", {
     // and testing).
     debug: true,
     // Whether to show a textual forecast summary.
-    showForecastSummary: false,
+    showForecastSummary: true,
     // Whether to show weekly forecast data.
-    showWeeklyForecast: false
+    showWeeklyForecast: true
   },
 
   start: function() {
