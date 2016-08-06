@@ -65,6 +65,20 @@
     margin: -13px 0 0 -45px;
   }
 
+  .suntimeContainer {
+    padding-left: 7px;
+  }
+  .suntime {
+    position: relative;
+  }
+  .suntime > img {
+    position: absolute;
+    height: 50px;
+    width: 50px;
+    top: -13px;
+    left: -45px;
+  }
+
   .alerts {
     text-align: left;
     width: 315px;
@@ -196,6 +210,12 @@
       <span class="icon"><img src="modules/hurst/weather/public/icons/Cloud.svg"></span>
       {{cloudCover}}%
     </div>
+  </div>
+
+  {{!-- sunrise/sunset times --}}
+  <div class="suntimeContainer normal small">
+    <span class="suntime"><img src="modules/hurst/weather/public/icons/Sunrise.svg"></span>
+    {{sunrise}} • {{sunset}}
   </div>
 
   {{!-- weather alerts --}}

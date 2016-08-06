@@ -122,6 +122,12 @@ Module.register("weather", {
     r.low = Math.round(tomorrow.apparentTemperatureMin);
     r.high = Math.round(tomorrow.apparentTemperatureMax);
 
+    // sunrise/sunset times
+    r.sunrise = new Date(data.daily.data[0].sunriseTime * 1000)
+        .toLocaleTimeString().replace(/:\d\d\s/, '').toLowerCase();
+    r.sunset =  new Date(data.daily.data[0].sunsetTime * 1000)
+        .toLocaleTimeString().replace(/:\d\d\s/, '').toLowerCase();
+
     // weather alerts
     if (data.alerts && data.alerts.length) {
       r.alerts = data.alerts.map(a => { return {title: a.title}; });
