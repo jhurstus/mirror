@@ -1,4 +1,5 @@
 var nodeHelper = require('node_helper'),
+    request = require('request'),
     console = require('console'),
     fs = require('fs');
 
@@ -16,7 +17,6 @@ module.exports = nodeHelper.create({
   // For example, if templates/foobar.html exists, the response would be:
   // templates={foobar:'...content of foobar.html...'};
   templatesHandler: function(req, res) {
-    console.log('loading weather templates');
     var templates = {};
     var path = this.path + '/templates/';
     var fileNames = fs.readdirSync(path);
@@ -30,5 +30,19 @@ module.exports = nodeHelper.create({
   },
 
   socketNotificationReceived: function(notification, payload) {
+    if (notification == 'download') {
+      var self = this;
+      request(payload, (error, response, body) => {
+        if (error) {
+          console.log(error);
+          return;
+        }
+        if (response.statusCode != 200) {
+          console.log('weather response status code ' + response.statusCode);
+          return;
+        }
+        self.sendSocketNotification('download', body);
+      });
+    }
   }
 });

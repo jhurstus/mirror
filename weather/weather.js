@@ -2,17 +2,47 @@ Module.register("weather", {
   defaults: {
     // Whether to load canned weather data from a stub response (for development
     // and testing).
-    debug: true,
+    debug: false,
     // Whether to show a textual forecast summary.
     showForecastSummary: true,
     // Whether to show weekly forecast data.
-    showWeeklyForecast: true
+    showWeeklyForecast: true,
+    // Forecast.io API key.  This value MUST be set for this module to work.
+    // A key can be obtained from https://developer.forecast.io/
+    apiKey: '',
+    // Latitude and longitude for which weather data should be displayed, in
+    // 'LAT,LNG' format.  For example, 37.795444,-122.393444.  This value MUST
+    // be set for this module to work.
+    latLng: '',
+    // Time in milliseconds between weather updates.  Forecast.io provides 1000
+    // requests per day free.  To stay under that quota, choose a config value
+    // of at least ((24*60*60*1000)/1000)==86400.
+    updateInterval: 1000 * 60 * 15,  // 15 minutes
+    // The maximum age in milliseconds for which a forecast will be displayed.
+    // If data cannot be updated before this limit, the UI will be hidden, so
+    // as to prevent the display of stale forecast data.  This value MUST be
+    // greater than 'updateInterval'.
+    dataAgeLimit: 1000 * 60 * 60 * 3,  // 3 hours
+    // Duration in milliseconds for animating in new weather data.
+    animationDuration: 500  // 0.5 seconds
   },
 
   start: function() {
     Log.info('starting weather');
+
     this.mainTemplate = Handlebars.compile(templates.main);
     google.charts.load('current', {packages: ['corechart']});
+
+    if (this.config.debug) {
+      Log.info(DEBUG_DATA);
+      this.lastUpdateTimestamp = Date.now();
+      this.forecastData = DEBUG_DATA;
+    } else {
+      this.lastUpdateTimestamp = 0;
+      this.forecastData = null;
+      this.downloadForecast();
+      setInterval(this.downloadForecast.bind(this), this.config.updateInterval);
+    }
   },
 
   getScripts: function() {
@@ -35,25 +65,40 @@ Module.register("weather", {
     Log.info('resuming weather');
   },
 
+  // Initiates download of forecast.io weather forecast data.
+  downloadForecast: function() {
+    var url = 'https://api.forecast.io/forecast/' +
+        this.config.apiKey + '/' + this.config.latLng;
+    this.sendSocketNotification('download', url);
+  },
+
+  socketNotificationReceived: function(notification, payload) {
+    if (notification == 'download') {
+      try {
+        var data = JSON.parse(payload);
+        if (this.isForecastDataValid(data)) {
+          this.forecastData = data;
+          this.lastUpdateTimestamp = Date.now();
+          this.updateDom(this.config.animationDuration);
+        } else {
+          Log.error('Invalid forecast data.');
+        }
+      } catch (err) {
+        Log.error(err.toString());
+      }
+    }
+  },
+
   getDom: function() {
     Log.info('updating weather dom');
 
-    var forecastData;
-
-    if (this.config.debug) {
-      Log.info(DEBUG_DATA);
-      forecastData = DEBUG_DATA;
-    } else {
-      // TODO: get non-debug data
-    }
-
-    if (!this.isForecastDataValid(forecastData)) {
-      // TODO: handle invalid data
-      return;
+    if (!this.forecastData ||
+        (Date.now() - this.lastUpdateTimestamp) > this.config.dataAgeLimit) {
+      return document.createElement('div');
     }
 
     this.dom = document.createElement('div');
-    this.viewModel = this.getViewModel(forecastData);
+    this.viewModel = this.getViewModel(this.forecastData);
     this.dom.innerHTML = this.mainTemplate(this.viewModel);
 
     google.charts.setOnLoadCallback(this.drawCharts.bind(this));
@@ -126,8 +171,8 @@ Module.register("weather", {
               .toDateString().replace(/\s.*/, '')
         });
         weeklyMin = Math.min(weeklyMin, day.apparentTemperatureMin);
-        weeklyMax = Math.max(weeklyMin, day.apparentTemperatureMax);
-        opacity -= 0.13;
+        weeklyMax = Math.max(weeklyMax, day.apparentTemperatureMax);
+        opacity -= 0.1;
       }
 
       // calculate offsets for temperature bars in daily forecasts
@@ -137,7 +182,7 @@ Module.register("weather", {
       // Size of temperature bar container and hi/lo label text.
       // These values must be updated if temp bar styles/layout change. :/
       var cellWidth = 255;
-      var tempTextWidth = 50;
+      var tempTextWidth = 30;
       for (var i = 0; i < r.dailyForecasts.length; i++) {
         var barWidth = Math.round(
             (cellWidth - 2 * tempTextWidth)  *
@@ -210,7 +255,7 @@ Module.register("weather", {
   // asynchronous.
   drawCharts: function() {
     var windMin = 0;
-    var windMax = 20;
+    var windMax = 30;
     var tempMin = 40;
     var tempMax = 90;
 
@@ -236,6 +281,8 @@ Module.register("weather", {
     }
 
     var options = {
+      height: 150,
+      width: 270,
       areaOpacity: 1,
       axisTitlesPosition: 'omit',
       backgroundColor: 'transparent',
@@ -297,8 +344,5 @@ Module.register("weather", {
     var chart = new google.visualization.ComboChart(
         this.dom.querySelector('#chart'));
     chart.draw(data, options);
-  },
-
-  socketNotificationReceived: function(notification, payload) {
   }
 });
