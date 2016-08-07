@@ -30,7 +30,7 @@ Module.register("weather", {
   start: function() {
     Log.info('starting weather');
 
-    this.mainTemplate = Handlebars.compile(templates.main);
+    this.mainTemplate = Handlebars.compile(templates.weather.main);
     google.charts.load('current', {packages: ['corechart']});
 
     if (this.config.debug) {

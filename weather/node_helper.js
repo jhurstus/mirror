@@ -26,7 +26,8 @@ module.exports = nodeHelper.create({
       var shortFn = fn.replace(/\.html$/, '');
       templates[shortFn] = content;
     });
-    res.send('templates=' + JSON.stringify(templates));
+    res.send('templates=window.templates||{};templates.' +
+        this.name + '=' + JSON.stringify(templates));
   },
 
   socketNotificationReceived: function(notification, payload) {
