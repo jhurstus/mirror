@@ -18,7 +18,7 @@ Module.register("muni", {
     // greater than 'updateInterval'.
     dataAgeLimit: 1000 * 60 * 1,  // 1 minute
     // Duration in milliseconds for animating in new prediction data.
-    animationDuration: 500  // 0.5 seconds
+    animationDuration: 0  // no animation
   },
 
   start: function() {
@@ -50,21 +50,31 @@ Module.register("muni", {
 
   // Initiates download of muni prediction data.
   downloadPredictions: function() {
-    this.sendSocketNotification('predictions', this.config.stops);
+    this.sendSocketNotification(
+        'predictions',
+        {agency: this.config.agency, stops: this.config.stops});
   },
 
   socketNotificationReceived: function(notification, payload) {
     if (notification == 'predictions') {
+      try {
+        var xml = new DOMParser().parseFromString(payload, "text/xml");
+        if (this.isPredictionsDataValid(xml)) {
+          this.predictionsData = xml;
+          this.lastUpdateTimestamp = Date.now();
+          this.updateDom(this.config.animationDuration);
+        }
+      } catch (err) {
+        Log.error(err);
+      }
     }
   },
 
   getDom: function() {
-    Log.info('updating muni dom');
-
-    //if (!this.predictionsData ||
-    //    (Date.now() - this.lastUpdateTimestamp) > this.config.dataAgeLimit) {
-    //  return document.createElement('div');
-    //}
+    if (!this.predictionsData ||
+        (Date.now() - this.lastUpdateTimestamp) > this.config.dataAgeLimit) {
+      return document.createElement('div');
+    }
 
     this.dom = document.createElement('div');
     this.viewModel = this.getViewModel(this.predictionsData);
@@ -77,7 +87,30 @@ Module.register("muni", {
   // templates.
   // See https://www.nextbus.com/xmlFeedDocs/NextBusXMLFeed.pdf for data format.
   getViewModel: function(data) {
-    var r = {};
+    var r = {predictions:[]};
+
+    var predictions = data.getElementsByTagName('predictions');
+    for (var i = 0; i < predictions.length; i++) {
+      var routeName = predictions[i].getAttribute('routeTag');
+      var icon = this.getIcon(routeName);
+      var m = {
+        iconUrl: icon.url,
+        iconText: icon.text,
+        times:[]
+      };
+
+      var times = predictions[i].getElementsByTagName('prediction');
+      // Only show three most recent times to keep rows uniform and because
+      // predictions for more distant times are typically very inaccurate.
+      for (var j = 0; j < times.length && j < 3; j++) {
+        m.times.push({
+          minutes: times[j].getAttribute('minutes'),
+          affectedByLayover:
+              times[j].getAttribute('affectedByLayover') == 'true'
+        });
+      }
+      r.predictions.push(m);
+    }
 
     return r;
   },
@@ -92,14 +125,26 @@ Module.register("muni", {
       return false;
     }
 
+    var predictions = data.getElementsByTagName('predictions');
+    if (predictions.length != this.config.stops.length) {
+      Log.info('did not receive predictions for requested stops');
+    }
+
     return true;
   },
 
   // Maps muni route names to their associated icon URLs.
-  getIconUrl: function(iconName) {
-    var iconMap = {
-    };
-    var iconFile = iconMap[iconName];
-    return 'modules/hurst/muni/public/icons/' + iconFile;
+  getIcon: function(iconName) {
+    var specialIcons = ['J', 'K', 'L', 'M', 'N', 'S', 'T'];
+    var iconFile = 'generic';
+    var text = iconName;
+    if (specialIcons.indexOf(iconName) >= 0) {
+      iconFile = iconName.toLowerCase();
+      text = '';
+    }
+    return {
+      url: 'modules/hurst/muni/public/icons/muni_' + iconFile + '.png',
+      text: text
+    }
   }
 });
