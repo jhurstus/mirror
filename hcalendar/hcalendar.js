@@ -95,6 +95,7 @@ Module.register("hcalendar",{
 		var events = this.createEventList();
 		var wrapper = document.createElement("table");
 		wrapper.className = "small";
+    wrapper.style.marginTop = '80px';
 
 		if (events.length === 0) {
 			wrapper.innerHTML = (this.loaded) ? this.translate("EMPTY") : this.translate("LOADING");
@@ -102,8 +103,6 @@ Module.register("hcalendar",{
 			return wrapper;
 		}
 
-    var hasEventToday = false;
-    var hasRenderedTodaySeparator = false;
     var lastRenderedDay = null;
 		for (var e in events) {
 			var event = events[e];
@@ -113,7 +112,9 @@ Module.register("hcalendar",{
 
 			var titleWrapper = document.createElement("td"),
 				repeatingCountTitle = '';
-
+      if (this.symbolForUrl(event.url) == 'i') {
+        titleWrapper.style.fontStyle = 'italic';
+      }
 
 			if (this.config.displayRepeatingCountTitle) {
 
@@ -127,33 +128,8 @@ Module.register("hcalendar",{
 				}
 			}
 
-      if (event.today) {
-        hasEventToday = true;
-      } else if (hasEventToday && !hasRenderedTodaySeparator) {
-        hasRenderedTodaySeparator = true;
-        var separator = document.createElement('tr');
-        separator.innerHTML = '<td colspan="2"><hr></td>';
-        wrapper.appendChild(separator);
-      }
-
-      var eventMoment = moment(event.startDate, "x");
-      if (lastRenderedDay != eventMoment.day()) {
-        lastRenderedDay = eventMoment.day();
-        var dayHeader = document.createElement('tr');
-        dayHeader.innerHTML =
-          '<td class="small" style="font-weight:bold;color:#fff;padding:5px 0;" colspan="2">' +
-          (event.today ? 'TODAY' : eventMoment.format("dddd").toUpperCase()) +
-          '</td>';
-        wrapper.appendChild(dayHeader);
-      }
-
-			titleWrapper.innerHTML = this.titleTransform(event.title) + repeatingCountTitle;
-      if (event.today) {
-        titleWrapper.className = "title bright";
-      }
-			eventWrapper.appendChild(titleWrapper);
-
 			var timeWrapper =  document.createElement("td");
+      timeWrapper.style.paddingRight = '1em';
 			//console.log(event.today);
 			var now = new Date();
 			// Define second, minute, hour, and day variables
@@ -161,15 +137,12 @@ Module.register("hcalendar",{
 			var one_minute = one_second * 60;
 			var one_hour = one_minute * 60;
 			var one_day = one_hour * 24;
-			if (!event.fullDayEvent) {
-				if (event.startDate >= new Date()) {
-          var timeMoment = moment(event.startDate, "x");
-          if (!(timeMoment.hour() == 0 && timeMoment.minute() == 0)) {
-            timeWrapper.innerHTML = timeMoment.format("h:mma");
-          }
-				} else {
-					timeWrapper.innerHTML =  this.translate("RUNNING") + ' ' + moment(event.endDate,"x").fromNow(true);
-				}
+      var timeMoment = moment(event.startDate, "x");
+			if (event.fullDayEvent ||
+          (timeMoment.hour() == 0 && timeMoment.minute() == 0)) {
+        timeWrapper.innerHTML = 'All day'
+      } else {
+        timeWrapper.innerHTML = timeMoment.format("h:mma");
 			}
 			//timeWrapper.innerHTML += ' - '+ moment(event.startDate,'x').format('lll');
 			//console.log(event);
@@ -178,6 +151,26 @@ Module.register("hcalendar",{
           .replace(" PM", "pm")
           .replace(" AM", "am");
 			eventWrapper.appendChild(timeWrapper);
+
+      var eventMoment = moment(event.startDate, "x");
+      if (lastRenderedDay != eventMoment.day()) {
+        lastRenderedDay = eventMoment.day();
+        var dayHeader = document.createElement('tr');
+        var dayStr = eventMoment.format("dddd").toUpperCase();
+        if (event.today) {
+          dayStr = 'TODAY';
+        } else if (event.startDate - now < one_day && event.startDate - now > 0) {
+          dayStr = 'TOMORROW';
+        }
+        dayHeader.innerHTML =
+          '<td class="small" style="font-weight:bold;color:#fff;padding:20px 0 5px 0;" colspan="2">' +
+          dayStr +
+          '</td>';
+        wrapper.appendChild(dayHeader);
+      }
+
+			titleWrapper.innerHTML = this.titleTransform(event.title) + repeatingCountTitle;
+			eventWrapper.appendChild(titleWrapper);
 
 			wrapper.appendChild(eventWrapper);
 
