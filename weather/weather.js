@@ -279,9 +279,10 @@ Module.register("weather", {
       data.addRows([[
           this.viewModel.hourLabels[i],
           this.viewModel.temperatures[i],
-          i % 6 == 1 ? this.viewModel.temperatures[i] + '°' : null,
+          i % 4 == 1 ? this.viewModel.temperatures[i] + '°' : null,
           this.viewModel.windSpeeds[i],
-          i % 6 == 4 ? this.viewModel.windSpeeds[i] + 'mph' : null,
+          (i % 4 == 3 && i < (this.viewModel.hourLabels.length - 3))
+           ? this.viewModel.windSpeeds[i] + 'mph' : null,
           this.viewModel.precipitationProbabilities[i]
       ]]);
     }
