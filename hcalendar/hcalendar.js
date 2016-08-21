@@ -7,7 +7,7 @@
  * MIT Licensed.
  */
 
-Module.register("calendar",{
+Module.register("hcalendar",{
 
 	// Define module defaults
 	defaults: {
