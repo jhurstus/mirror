@@ -57,6 +57,10 @@ Module.register("weather", {
     return scripts;
   },
 
+  getStyles: function() {
+    return [this.file('styles.css')];
+  },
+
   suspend: function() {
     Log.info('suspending weather');
   },

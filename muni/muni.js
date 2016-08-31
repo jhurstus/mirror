@@ -40,6 +40,10 @@ Module.register("muni", {
     ];
   },
 
+  getStyles: function() {
+    return [this.file('styles.css')];
+  },
+
   suspend: function() {
     Log.info('suspending muni');
   },
