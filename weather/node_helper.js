@@ -1,7 +1,7 @@
 var nodeHelper = require('node_helper'),
     request = require('request'),
     console = require('console'),
-    TemplateHandler = require('../template_handler.js');
+    TemplateHandler = require('../shared/template_handler.js');
 
 module.exports = nodeHelper.create({
   start: function() {

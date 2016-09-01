@@ -47,7 +47,7 @@ Module.register("weather", {
 
   getScripts: function() {
     var scripts = [
-      this.file('vendor/handlebars.js'),
+      '/modules/hurst/shared/vendor/handlebars.js',
       '/weather/templates.js',
       'https://www.gstatic.com/charts/loader.js'
     ];

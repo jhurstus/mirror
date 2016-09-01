@@ -35,7 +35,7 @@ Module.register("muni", {
 
   getScripts: function() {
     return [
-      this.file('vendor/handlebars.js'),
+      '/modules/hurst/shared/vendor/handlebars.js',
       '/muni/templates.js'
     ];
   },
