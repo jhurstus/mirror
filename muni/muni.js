@@ -104,8 +104,6 @@ Module.register("muni", {
       };
 
       var times = predictions[i].getElementsByTagName('prediction');
-      // Only show three most recent times to keep rows uniform and because
-      // predictions for more distant times are typically very inaccurate.
       for (var j = 0; j < times.length && j < 3; j++) {
         m.times.push({
           minutes: times[j].getAttribute('minutes'),
@@ -113,6 +111,14 @@ Module.register("muni", {
               times[j].getAttribute('affectedByLayover') == 'true'
         });
       }
+      // Show times in ascending order.
+      m.times.sort(function(a, b) {
+        return parseInt(a.minutes, 10) - parseInt(b.minutes, 10);
+      });
+      // Only show three most recent times to keep rows uniform and because
+      // predictions for more distant times are typically very inaccurate.
+      m.times = m.times.slice(0, 3);
+
       r.predictions.push(m);
     }
 
