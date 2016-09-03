@@ -25,7 +25,10 @@ Module.register("memo", {
   },
 
   getStyles: function() {
-    return [this.file('styles.css')];
+    return [
+      'https://fonts.googleapis.com/css?family=Amatic+SC:400,700&subset=latin-ext&.css',
+      this.file('styles.css')
+    ];
   },
 
   // Initiates download of memo.
