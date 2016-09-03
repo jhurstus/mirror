@@ -1,0 +1,5 @@
+/* flow like a normal webpage for development */
+html {
+  cursor: auto;
+  overflow: scroll;
+}
