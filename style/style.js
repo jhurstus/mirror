@@ -11,5 +11,10 @@ Module.register("style", {
     return [
       this.file('styles.css')
     ];
+  },
+
+  getDom: function() {
+    return document.createElement('span');
   }
+
 });
