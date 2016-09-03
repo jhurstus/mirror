@@ -1,9 +1,3 @@
-/* Magic Mirror Config Sample
- *
- * By Michael Teeuw http://michaelteeuw.nl
- * MIT Licensed.
- */
-
 var config = {
   port: 8080,
 
@@ -20,10 +14,38 @@ var config = {
       }
     },
     {
+      module: 'hurst/style',
+      position: 'top_left'
+    },
+    {
       module: 'hurst/muni',
       position: 'top_left',
       config: {
         stops: ['48|3463']
+      }
+    },
+    {
+      module: 'hurst/memo',
+      position: 'bottom_center',
+      config: {
+        memoUrl: '<your url here>'
+      }
+    },
+    {
+      module: 'hurst/hcalendar',
+      position: 'top_left',
+      config: {
+        maximumEntries: 20,
+        maximumNumberOfDays: 3,
+        displaySymbol: true,
+        fadePoint: 10000,
+        maxTitleLength: 30,
+        fetchInterval: 15 * 60 * 1000,
+        calendars: [
+          // <your calendars here>
+        ],
+        timeFormat: 'relative',
+        urgency: 7
       }
     },
     {
