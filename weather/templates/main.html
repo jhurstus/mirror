@@ -67,6 +67,7 @@
   {{/if}}
 
   {{!-- precipitation, temperature, and wind chart --}}
+  {{#if chart}}
   <div class="chartContainer sectionSep">
     <img src="modules/hurst/weather/public/icons/tempIcon.svg" class="tempIcon">
     <img src="modules/hurst/weather/public/icons/windIcon.svg" class="windIcon">
@@ -74,6 +75,7 @@
     <div id="chart">
     </div>
   </div>
+  {{/if}}
 
   {{!-- weekly forecast --}}
   {{#if dailyForecasts}}

@@ -7,6 +7,8 @@ Module.register("weather", {
     showForecastSummary: true,
     // Whether to show weekly forecast data.
     showWeeklyForecast: true,
+    // Whether to show hourly weather chart.
+    showChart: true,
     // Forecast.io API key.  This value MUST be set for this module to work.
     // A key can be obtained from https://developer.forecast.io/
     apiKey: '',
@@ -31,7 +33,9 @@ Module.register("weather", {
     Log.info('starting weather');
 
     this.mainTemplate = Handlebars.compile(templates.weather.main);
-    google.charts.load('current', {packages: ['corechart']});
+    if (this.config.showChart) {
+      google.charts.load('current', {packages: ['corechart']});
+    }
 
     if (this.config.debug) {
       Log.info(DEBUG_DATA);
@@ -48,9 +52,11 @@ Module.register("weather", {
   getScripts: function() {
     var scripts = [
       '/modules/hurst/shared/vendor/handlebars.js',
-      '/weather/templates.js',
-      'https://www.gstatic.com/charts/loader.js'
+      '/weather/templates.js'
     ];
+    if (this.config.showChart) {
+      scripts.push('https://www.gstatic.com/charts/loader.js');
+    }
     if (this.config.debug) {
       scripts.push(this.file('debug_forecast_response.js'));
     }
@@ -105,7 +111,9 @@ Module.register("weather", {
     this.viewModel = this.getViewModel(this.forecastData);
     this.dom.innerHTML = this.mainTemplate(this.viewModel);
 
-    google.charts.setOnLoadCallback(this.drawCharts.bind(this));
+    if (this.config.showChart) {
+      google.charts.setOnLoadCallback(this.drawCharts.bind(this));
+    }
 
     return this.dom;
   },
@@ -137,23 +145,28 @@ Module.register("weather", {
       r.alerts = data.alerts.map(a => { return {title: a.title}; });
     }
 
-    // 24h rain, temperature, and wind forecast
-    r.hourLabels = [];
-    r.temperatures = [];
-    r.windSpeeds = [];
-    r.precipitationProbabilities = [];
-    for (var i = 0; i < 24; i++) {
-      var hour = data.hourly.data[i];
-      var h = new Date(hour.time * 1000);
-      if (i % 4 == 2) {
-        r.hourLabels.push(new Date(hour.time * 1000)
-            .toLocaleTimeString().replace(/:\d\d:\d\d\s/, '').toLowerCase());
-      } else {
-        r.hourLabels.push('');
+    // 24h rain, temperature, and wind forecast chart
+    if (this.config.showChart) {
+      r.chart = true;
+      r.hourLabels = [];
+      r.temperatures = [];
+      r.windSpeeds = [];
+      r.precipitationProbabilities = [];
+      for (var i = 0; i < 24; i++) {
+        var hour = data.hourly.data[i];
+        var h = new Date(hour.time * 1000);
+        if (i % 4 == 2) {
+          r.hourLabels.push(new Date(hour.time * 1000)
+              .toLocaleTimeString().replace(/:\d\d:\d\d\s/, '').toLowerCase());
+        } else {
+          r.hourLabels.push('');
+        }
+        r.precipitationProbabilities.push(hour.precipProbability);
+        r.temperatures.push(Math.round(hour.apparentTemperature));
+        r.windSpeeds.push(Math.round(hour.windSpeed));
       }
-      r.precipitationProbabilities.push(hour.precipProbability);
-      r.temperatures.push(Math.round(hour.apparentTemperature));
-      r.windSpeeds.push(Math.round(hour.windSpeed));
+    } else {
+      r.chart = false;
     }
 
     // forecast summaries
