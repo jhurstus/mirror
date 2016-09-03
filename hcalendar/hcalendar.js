@@ -115,6 +115,7 @@ Module.register("hcalendar",{
       if (this.symbolForUrl(event.url) == 'i') {
         titleWrapper.style.fontStyle = 'italic';
       }
+      titleWrapper.style.width = '100%';
 
 			if (this.config.displayRepeatingCountTitle) {
 
@@ -158,12 +159,12 @@ Module.register("hcalendar",{
         var dayHeader = document.createElement('tr');
         var dayStr = eventMoment.format("dddd").toUpperCase();
         if (event.today) {
-          dayStr = 'TODAY';
+          dayStr = 'Today';
         } else if (event.startDate - now < one_day && event.startDate - now > 0) {
-          dayStr = 'TOMORROW';
+          dayStr = 'Tomorrow';
         }
         dayHeader.innerHTML =
-          '<td class="small" style="font-weight:bold;color:#fff;padding:20px 0 5px 0;" colspan="2">' +
+          '<td class="small" style="color:#fff;padding:20px 0 5px 0;" colspan="2">' +
           dayStr +
           '</td>';
         wrapper.appendChild(dayHeader);

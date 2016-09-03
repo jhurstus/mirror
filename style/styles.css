@@ -3,3 +3,9 @@ html {
   cursor: auto;
   overflow: scroll;
 }
+
+body {
+  height: calc(100% - 60px);
+  width: calc(100% - 60px);
+  margin: 30px 25px 30px 35px;
+}

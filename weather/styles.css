@@ -29,7 +29,7 @@
   box-shadow: 0 0 0 2px #fff;
 }
 .lowHigh {
-  line-height: 1em;
+  line-height: 30px;
   text-transform: uppercase;
 }
 
@@ -39,6 +39,7 @@
   align-items: center;
 }
 .conditionDetails > div {
+  color: #fff;
   text-align: center;
   padding-left: 45px;
   padding-right: 30px;
@@ -56,7 +57,8 @@
 }
 
 .suntimeContainer {
-  padding-left: 7px;
+  padding-left: 14px;
+  color: #fff;
 }
 .suntime {
   position: relative;
