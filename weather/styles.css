@@ -71,6 +71,20 @@
   left: -45px;
 }
 
+.shortForecast {
+  position: relative;
+  width: 290px;
+  top: -15px;
+  color: #fff;
+}
+.shortForecast img {
+  -webkit-filter: invert(1);
+  filter: invert(1);
+  position: relative;
+  top: 12px;
+  left: -1px;
+}
+
 .alerts {
   text-align: left;
   width: 315px;

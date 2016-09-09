@@ -141,6 +141,17 @@ Module.register("weather", {
         .toLocaleTimeString().replace(/:\d\d\s/, '').toLowerCase();
     r.sunset =  new Date(data.daily.data[0].sunsetTime * 1000)
         .toLocaleTimeString().replace(/:\d\d\s/, '').toLowerCase();
+    r.shortForecast = [];
+    for (var i = 1; i < 3; i++) {
+      var day = data.daily.data[i];
+      r.shortForecast.push({
+        low: Math.round(day.apparentTemperatureMin),
+        high: Math.round(day.apparentTemperatureMax),
+        iconUrl: this.getIconUrl(day.icon),
+        day: new Date(day.sunriseTime * 1000)
+          .toDateString().replace(/\s.*/, '')
+      });
+    }
 
     // weather alerts
     if (data.alerts && data.alerts.length) {

@@ -36,6 +36,18 @@
     {{sunrise}} • {{sunset}}
   </div>
 
+  {{!-- short forecast --}}
+  <div class="shortForecast normal small">
+  {{#each shortForecast}}
+  <span style="float:{{#if @first}}left{{else}}right{{/if}}">
+    {{day}}
+    <img src="{{iconUrl}}" width="35" height="35">
+    {{low}}° {{high}}°
+  </span>
+  {{/each}}
+  </div>
+
+
   {{!-- weather alerts --}}
   {{#if alerts}}
   <div class="alerts small">
