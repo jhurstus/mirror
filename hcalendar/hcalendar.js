@@ -108,7 +108,7 @@ Module.register("hcalendar",{
 			var event = events[e];
 
 			var eventWrapper = document.createElement("tr");
-			eventWrapper.className = "normal";
+			eventWrapper.className = "bright";
 
 			var titleWrapper = document.createElement("td"),
 				repeatingCountTitle = '';
