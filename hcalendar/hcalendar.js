@@ -103,13 +103,14 @@ Module.register("hcalendar",{
 			return wrapper;
 		}
 
-    var lastRenderedDay = null;
+    var todayRow = this.addDayHeader('Today', wrapper);
+    var tomorrowRow = this.addDayHeader('Tomorrow', wrapper);
+
 		for (var e in events) {
 			var event = events[e];
 
 			var eventWrapper = document.createElement("tr");
 			eventWrapper.className = "bright";
-
 			var titleWrapper = document.createElement("td"),
 				repeatingCountTitle = '';
       if (this.symbolForUrl(event.url) == 'i') {
@@ -117,76 +118,48 @@ Module.register("hcalendar",{
       }
       titleWrapper.style.width = '100%';
 
-			if (this.config.displayRepeatingCountTitle) {
-
-				repeatingCountTitle = this.countTitleForUrl(event.url);
-
-				if(repeatingCountTitle !== '') {
-					var thisYear = new Date().getFullYear(),
-						yearDiff = thisYear - event.firstYear;
-
-					repeatingCountTitle = ', '+ yearDiff + '. ' + repeatingCountTitle;
-				}
-			}
-
 			var timeWrapper =  document.createElement("td");
       timeWrapper.style.paddingRight = '1em';
-			//console.log(event.today);
 			var now = new Date();
-			// Define second, minute, hour, and day variables
-			var one_second = 1000; // 1,000 milliseconds
-			var one_minute = one_second * 60;
-			var one_hour = one_minute * 60;
-			var one_day = one_hour * 24;
+			var one_day = 1000 * 60 * 60 * 24;
       var timeMoment = moment(event.startDate, "x");
+      var isMultiDayEvent = event.endDate - event.startDate >= one_day;
 			if (event.fullDayEvent ||
-          (timeMoment.hour() == 0 && timeMoment.minute() == 0)) {
+          (timeMoment.hour() == 0 && timeMoment.minute() == 0) ||
+          isMultiDayEvent) {
         timeWrapper.innerHTML = 'All day'
       } else {
         timeWrapper.innerHTML = timeMoment.format("h:mma");
 			}
-			//timeWrapper.innerHTML += ' - '+ moment(event.startDate,'x').format('lll');
-			//console.log(event);
 			timeWrapper.className = "time light";
       timeWrapper.innerHTML = timeWrapper.innerHTML
           .replace(" PM", "pm")
           .replace(" AM", "am");
 			eventWrapper.appendChild(timeWrapper);
 
-      var eventMoment = moment(event.startDate, "x");
-      if (lastRenderedDay != eventMoment.day()) {
-        lastRenderedDay = eventMoment.day();
-        var dayHeader = document.createElement('tr');
-        var dayStr = eventMoment.format("dddd").toUpperCase();
-        if (event.today) {
-          dayStr = 'Today';
-        } else if (event.startDate - now < one_day && event.startDate - now > 0) {
-          dayStr = 'Tomorrow';
-        }
-        dayHeader.innerHTML =
-          '<td class="small" style="color:#fff;padding:20px 0 5px 0;" colspan="2">' +
-          dayStr +
-          '</td>';
-        wrapper.appendChild(dayHeader);
-      }
-
-			titleWrapper.innerHTML = this.titleTransform(event.title) + repeatingCountTitle;
+			titleWrapper.innerHTML =
+        this.titleTransform(event.title) + repeatingCountTitle;
 			eventWrapper.appendChild(titleWrapper);
 
-			wrapper.appendChild(eventWrapper);
+      var yesterdayMidnight =
+          moment(now.getTime(), 'x')
+          .milliseconds(0).seconds(0).minutes(0).hours(0)
+          .valueOf();
+      var todayMidnight = yesterdayMidnight + one_day;
+      var tomorrowMidnight = todayMidnight + one_day;
 
-			// Create fade effect.
-			if (this.config.fade && this.config.fadePoint < 1) {
-				if (this.config.fadePoint < 0) {
-					this.config.fadePoint = 0;
-				}
-				var startingPoint = events.length * this.config.fadePoint;
-				var steps = events.length - startingPoint;
-				if (e >= startingPoint) {
-					var currentStep = e - startingPoint;
-					eventWrapper.style.opacity = 1 - (1 / steps * currentStep);
-				}
-			}
+      if (event.startDate <= yesterdayMidnight &&
+          event.endDate > todayMidnight &&
+          isMultiDayEvent) {
+        // Event spans today and tomorrow; clone it and append to 'today' and
+        // 'tomorrow'.
+        wrapper.insertBefore(eventWrapper, tomorrowRow);
+        wrapper.appendChild(eventWrapper.cloneNode(true));
+      } else if (event.startDate >= todayMidnight) {
+        wrapper.appendChild(eventWrapper);
+      } else if (event.startDate >= yesterdayMidnight) {
+        wrapper.insertBefore(eventWrapper, tomorrowRow);
+      }
 		}
 
 		return wrapper;
@@ -319,5 +292,14 @@ Module.register("hcalendar",{
 		title = this.shorten(title, this.config.maxTitleLength);
     title = title.toLowerCase();
     return title[0].toUpperCase() + title.substr(1);
-	}
+	},
+
+  addDayHeader: function(dayStr, wrapper) {
+    var dayHeader = document.createElement('tr');
+    dayHeader.innerHTML =
+        '<td class="small" style="color:#fff;padding:20px 0 5px 0;" ' +
+        'colspan="2">' + dayStr + '</td>';
+    wrapper.appendChild(dayHeader);
+    return dayHeader;
+  }
 });
