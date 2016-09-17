@@ -94,7 +94,7 @@ Module.register("hcalendar",{
 
 		var events = this.createEventList();
 		var wrapper = document.createElement("table");
-		wrapper.className = "small";
+		wrapper.className = "small calendarTable";
     wrapper.style.marginTop = '80px';
 
 		if (events.length === 0) {
