@@ -87,17 +87,15 @@
 }
 
 .alerts {
-  text-align: left;
+  text-align: center;
   width: 315px;
+  position: relative;
+  left: -23px;
 }
 .alerts li {
   list-style-type: none;
   color: #f88;
   margin-bottom: 1em;
-}
-.alerts img {
-  position: absolute;
-  margin-left: -40px;
 }
 
 .chartContainer {
