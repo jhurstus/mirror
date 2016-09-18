@@ -95,7 +95,7 @@ Module.register("hcalendar",{
 		var events = this.createEventList();
 		var wrapper = document.createElement("table");
 		wrapper.className = "small calendarTable";
-    wrapper.style.marginTop = '80px';
+    wrapper.style.marginTop = '70px';
 
 		if (events.length === 0) {
 			wrapper.innerHTML = (this.loaded) ? this.translate("EMPTY") : this.translate("LOADING");
@@ -131,7 +131,7 @@ Module.register("hcalendar",{
       } else {
         timeWrapper.innerHTML = timeMoment.format("h:mma");
 			}
-			timeWrapper.className = "time light";
+			timeWrapper.className = "time";
       timeWrapper.innerHTML = timeWrapper.innerHTML
           .replace(" PM", "pm")
           .replace(" AM", "am");
@@ -297,7 +297,7 @@ Module.register("hcalendar",{
   addDayHeader: function(dayStr, wrapper) {
     var dayHeader = document.createElement('tr');
     dayHeader.innerHTML =
-        '<td class="small" style="color:#fff;padding:20px 0 5px 0;" ' +
+        '<td class="small" style="color:#fff;padding:30px 0 5px 0;" ' +
         'colspan="2">' + dayStr + '</td>';
     wrapper.appendChild(dayHeader);
     return dayHeader;
