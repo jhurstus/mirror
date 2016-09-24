@@ -155,7 +155,16 @@ Module.register("weather", {
 
     // weather alerts
     if (data.alerts && data.alerts.length) {
-      r.alerts = data.alerts.map(a => { return {title: a.title}; });
+      // De-duplicate alerts.
+      var alertSet = {}
+      r.alerts = [];
+      for (var i = 0; i < data.alerts.length; i++) {
+        var title = data.alerts[i].title;
+        if (!alertSet[title]) {
+          alertSet[title] = 1;
+          r.alerts.push({title: title.replace("for San Francisco, CA", "")});
+        }
+      }
     }
 
     // 24h rain, temperature, and wind forecast chart
