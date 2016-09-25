@@ -9,14 +9,14 @@ Module.register("weather", {
     showWeeklyForecast: true,
     // Whether to show hourly weather chart.
     showChart: true,
-    // Forecast.io API key.  This value MUST be set for this module to work.
-    // A key can be obtained from https://developer.forecast.io/
+    // Darksky API key.  This value MUST be set for this module to work. A key
+    // can be obtained from https://darksky.net/dev/
     apiKey: '',
     // Latitude and longitude for which weather data should be displayed, in
     // 'LAT,LNG' format.  For example, 37.795444,-122.393444.  This value MUST
     // be set for this module to work.
     latLng: '',
-    // Time in milliseconds between weather updates.  Forecast.io provides 1000
+    // Time in milliseconds between weather updates.  Darksky provides 1000
     // requests per day free.  To stay under that quota, choose a config value
     // of at least ((24*60*60*1000)/1000)==86400.
     updateInterval: 1000 * 60 * 15,  // 15 minutes
@@ -75,9 +75,9 @@ Module.register("weather", {
     Log.info('resuming weather');
   },
 
-  // Initiates download of forecast.io weather forecast data.
+  // Initiates download of Darksky weather forecast data.
   downloadForecast: function() {
-    var url = 'https://api.forecast.io/forecast/' +
+    var url = 'https://api.darksky.net/forecast/' +
         this.config.apiKey + '/' + this.config.latLng;
     this.sendSocketNotification('download', url);
   },
@@ -118,9 +118,9 @@ Module.register("weather", {
     return this.dom;
   },
 
-  // Converts forecast.io forecast api data to view model object passed to
-  // handlebar templates.
-  // See https://developer.forecast.io/docs/v2 for parameter format.
+  // Converts Darksky forecast api data to view model object passed to handlebar
+  // templates.
+  // See https://darksky.net/dev/docs for parameter format.
   getViewModel: function(data) {
     var r = {};
 
@@ -244,9 +244,9 @@ Module.register("weather", {
     return r;
   },
 
-  // Validates forecast.io forecast api data has expected fields in the
-  // expected format.
-  // See https://developer.forecast.io/docs/v2 for parameter format.
+  // Validates Darksky forecast api data has expected fields in the expected
+  // format.
+  // See https://darksky.net/dev/docs for parameter format.
   isForecastDataValid: function(data) {
     // Ideally every utilized field of every object would be validated, but
     // this is a hobby project, so I'm just checking that containers exist.
@@ -276,8 +276,8 @@ Module.register("weather", {
     return true;
   },
 
-  // Maps forecast.io 'icon' enum values to actual icon filenames.
-  // See https://developer.forecast.io/docs/v2 for icon enum definition.
+  // Maps Darksky 'icon' enum values to actual icon filenames. See
+  // https://darksky.net/dev/docs for icon enum definition.
   getIconUrl: function(iconName) {
     var iconMap = {
       'clear-day': 'Sun.svg',
