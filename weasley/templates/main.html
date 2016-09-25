@@ -1,2 +1,11 @@
+{{#if people.length}}
 <div>
+  <ul>
+  {{#each people}}
+    <li class="bright normal">
+      {{this}}
+    </li>
+  {{/each}}
+  </ul>
 </div>
+{{/if}}

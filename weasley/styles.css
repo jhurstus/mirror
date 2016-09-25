@@ -7,3 +7,12 @@
 .private .weasley {
   display: none;
 }
+
+.weasley ul {
+  margin-top: 60px;
+  padding: 0;
+}
+.weasley li {
+  list-style-type: none;
+  font-size: 0.75em;
+}
