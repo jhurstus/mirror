@@ -77,9 +77,6 @@ Module.register("weasley", {
         var name = this.config.users[id];
         this.locations.push({name: name, loc: loc});
       }
-      this.locations.sort(function(a, b) {
-        return a.name.localeCompare(b.name);
-      });
     }
     this.updateDom(this.config.animationDuration);
   },
