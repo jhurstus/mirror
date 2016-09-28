@@ -105,8 +105,16 @@ Module.register("weasley", {
     var l = loc.loc;
 
     var fence = this.isInGeofence(l);
-    if (fence) {
-      if (fence.toLowerCase() == 'home') {
+    var isHome = fence && (fence.toLowerCase() == 'home');
+    var minutesOld = this.locationEventTimeStampToMinutes(l.timestamp);
+
+    if ((isHome && (minutesOld > (60 * 11))) ||
+        (!isHome && (minutesOld > 45))) {
+      // Tolerate longer stale times for home, when phones might be turned off
+      // overnight.
+      p += 'off the grid';
+    } else if (fence) {
+      if (isHome) {
         p += fence;
       } else {
         p += 'at ' + fence;
@@ -153,6 +161,13 @@ Module.register("weasley", {
       Math.pow(Math.sin(dLng / 2), 2);
     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return 1000 * r * c;
+  },
+
+  // Changes a location event timestamp (UTC) to how far in the past it
+  // occurred, in minutes.
+  locationEventTimeStampToMinutes: function(t) {
+    var now = new Date().getTime();
+    return Math.round(Math.max(0, (now - t) / (60 * 1000)));
   }
 
 });
