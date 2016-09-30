@@ -93,16 +93,42 @@ Module.register("weasley", {
 
   getViewModel: function() {
     var r = {people: []};
+
+    var descriptionToNames = {};
     for (var i = 0; i < this.locations.length; i++) {
-      r.people.push(this.getLocationDescription(this.locations[i]));
+      var desc = this.getLocationDescription(this.locations[i]);
+      if (!descriptionToNames[desc]) {
+        descriptionToNames[desc] = [];
+      }
+      descriptionToNames[desc].push(this.locations[i].name);
     }
+
+    for (var d in descriptionToNames) {
+      if (descriptionToNames.hasOwnProperty(d)) {
+        var names = descriptionToNames[d];
+        if (names.length == 1) {
+          r.people.push(names[0] + ' is ' + d);
+        } else if (names.length == 2) {
+          r.people.push(names[0] + ' and ' + names[1] + ' are ' + d);
+        } else {
+          var p = '';
+          for (var i = 0; i < names.length - 2; i++) {
+            p += names[i] + ', ';
+          }
+          p += names[names.length - 2] + ', and ';
+          p += names[names.length - 1] + ' are ' + d;
+          r.people.push(p);
+        }
+      }
+    }
+
     return r;
   },
 
   // Gets a textual description of the passed location.
   getLocationDescription: function(loc) {
-    var p = loc.name + ' is ';
     var l = loc.loc;
+    var p;
 
     var fence = this.isInGeofence(l);
     var isHome = fence && (fence.toLowerCase() == 'home');
@@ -112,23 +138,23 @@ Module.register("weasley", {
         (!isHome && (minutesOld > 45))) {
       // Tolerate longer stale times for home, when phones might be turned off
       // overnight.
-      p += 'off the grid';
+      p = 'off the grid';
     } else if (fence) {
       if (isHome) {
-        p += fence;
+        p = fence;
       } else {
-        p += 'at ' + fence;
+        p = 'at ' + fence;
       }
     } else if (l.country == this.config.homeCountry &&
         l.city == this.config.homeCity) {
-      p += 'out and about';
+      p = 'out and about';
     } else if (l.country == this.config.homeCountry &&
         l.state == this.config.homeState) {
-      p += 'in ' + l.city;
+      p = 'in ' + l.city;
     } else if (l.country == this.config.homeCountry) {
-      p += 'in ' + l.city + ', ' + l.state;
+      p = 'in ' + l.city + ', ' + l.state;
     } else {
-      p += 'in ' + l.city + ', ' + l.country;
+      p = 'in ' + l.city + ', ' + l.country;
     }
 
     return p;
