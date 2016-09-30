@@ -305,8 +305,8 @@ Module.register("hcalendar",{
   addDayHeader: function(dayStr, wrapper) {
     var dayHeader = document.createElement('tr');
     dayHeader.innerHTML =
-        '<td class="small" style="color:#fff;padding:30px 0 5px 0;" ' +
-        'colspan="2">' + dayStr + '</td>';
+        '<td class="small" style="font-size:24px;color:#fff;' +
+        'padding:30px 0 5px 0;" colspan="2">' + dayStr + '</td>';
     wrapper.appendChild(dayHeader);
     return dayHeader;
   }
