@@ -162,6 +162,14 @@ Module.register("hcalendar",{
       }
 		}
 
+    // Clear today and/or tomorrow headers if there are no such events.
+    if (todayRow.nextSibling == tomorrowRow) {
+      todayRow.remove();
+    }
+    if (!tomorrowRow.nextSibling) {
+      tomorrowRow.remove();
+    }
+
 		return wrapper;
 	},
 
