@@ -90,10 +90,21 @@ var CalendarFetcher = function(url, reloadInterval, maximumEntries, maximumNumbe
 						var rule = event.rrule;
 						var dates = rule.between(today, future, true, limitFunction);
 
+            var excludedDates = new Map();
+            if (event.exdate && event.exdate.length) {
+              excludedDates = new Map(event.exdate.
+                map(x => x && x.val).
+                filter(x => typeof x == 'string').
+                map(x => x.match(/^(\d{4})(\d{2})(\d{2})T/)).
+                filter(x => x).
+                map(x => [x[1] + '-' + x[2] + '-' + x[3], 1]));
+            }
+
 						for (var d in dates) {
 							startDate = moment(new Date(dates[d]));
 							endDate  = moment(parseInt(startDate.format("x")) + duration, 'x');
-							if (endDate.format("x") > now) {
+							if (endDate.format("x") > now &&
+                  !excludedDates.has(endDate.format('YYYY-MM-DD'))) {
 								newEvents.push({
 									title: title,
 									startDate: startDate.format("x"),
