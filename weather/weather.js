@@ -126,7 +126,12 @@ Module.register("weather", {
 
     // current conditions
     r.temperature = Math.round(data.currently.apparentTemperature);
-    r.summary = data.currently.summary;
+    r.summary = data.hourly.summary;
+    if (r.summary.match(/\./g).length == 1) {
+      // Remove trailing period if there's only a single sentence in the
+      // summary.
+      r.summary = r.summary.replace(/\.$/, '');
+    }
     r.windSpeed = Math.round(data.currently.windSpeed);
     r.cloudCover = Math.round(100 * data.currently.cloudCover);
     var today = data.daily.data[0];

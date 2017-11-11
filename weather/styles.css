@@ -1,3 +1,8 @@
+.summary {
+  max-width: 325px;
+  text-align: center;
+}
+
 .layout {
   display: flex;
   flex-direction: column;
