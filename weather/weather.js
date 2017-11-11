@@ -132,10 +132,19 @@ Module.register("weather", {
     var today = data.daily.data[0];
     r.low = Math.round(today.apparentTemperatureLow);
     r.high = Math.round(today.apparentTemperatureHigh);
-    // Show average precipitation probability for the current day, instead of
-    // instantaneous probability.  This is more useful for determining if you
-    // need an umbrella.
-    r.precipProbability = Math.round(100 * today.precipProbability);
+    // Show max precipitation probability for the rest of the day (to 4am),
+    // instead of instantaneous probability.  This is more useful for
+    // determining if you need an umbrella.
+    var precipProbability = 0.0;
+    var hourly = data.hourly.data;
+    var i = 0;
+    do {
+      var hour = new Date(hourly[i].time * 1000).getHours();
+      precipProbability = Math.max(
+          precipProbability, hourly[i].precipProbability);
+      i++;
+    } while (i < hourly.length && hour != 4)
+    r.precipProbability = Math.round(100 * precipProbability);
     // sunrise/sunset times
     r.sunrise = new Date(data.daily.data[0].sunriseTime * 1000)
         .toLocaleTimeString().replace(/:\d\d\s/, '').toLowerCase();
