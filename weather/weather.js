@@ -130,8 +130,8 @@ Module.register("weather", {
     r.windSpeed = Math.round(data.currently.windSpeed);
     r.cloudCover = Math.round(100 * data.currently.cloudCover);
     var today = data.daily.data[0];
-    r.low = Math.round(today.apparentTemperatureMin);
-    r.high = Math.round(today.apparentTemperatureMax);
+    r.low = Math.round(today.apparentTemperatureLow);
+    r.high = Math.round(today.apparentTemperatureHigh);
     // Show average precipitation probability for the current day, instead of
     // instantaneous probability.  This is more useful for determining if you
     // need an umbrella.
@@ -145,8 +145,8 @@ Module.register("weather", {
     for (var i = 1; i < 3; i++) {
       var day = data.daily.data[i];
       r.shortForecast.push({
-        low: Math.round(day.apparentTemperatureMin),
-        high: Math.round(day.apparentTemperatureMax),
+        low: Math.round(day.apparentTemperatureLow),
+        high: Math.round(day.apparentTemperatureHigh),
         iconUrl: this.getIconUrl(day.icon),
         day: new Date(day.sunriseTime * 1000)
           .toDateString().replace(/\s.*/, '')
@@ -208,15 +208,15 @@ Module.register("weather", {
       for (var i = 1; i < 7; i++) {
         var day = data.daily.data[i];
         r.dailyForecasts.push({
-          low: Math.round(day.apparentTemperatureMin),
-          high: Math.round(day.apparentTemperatureMax),
+          low: Math.round(day.apparentTemperatureLow),
+          high: Math.round(day.apparentTemperatureHigh),
           iconUrl: this.getIconUrl(day.icon),
           opacity: opacity,
           day: new Date(day.sunriseTime * 1000)
               .toDateString().replace(/\s.*/, '')
         });
-        weeklyMin = Math.min(weeklyMin, day.apparentTemperatureMin);
-        weeklyMax = Math.max(weeklyMax, day.apparentTemperatureMax);
+        weeklyMin = Math.min(weeklyMin, day.apparentTemperatureLow);
+        weeklyMax = Math.max(weeklyMax, day.apparentTemperatureHigh);
         opacity -= 0.1;
       }
 
