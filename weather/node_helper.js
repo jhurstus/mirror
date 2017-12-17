@@ -12,7 +12,7 @@ module.exports = nodeHelper.create({
   socketNotificationReceived: function(notification, payload) {
     if (notification == 'download') {
       var self = this;
-      request({url: payload, timeout: 30 * 1000}, (error, response, body) => {
+      request({url: payload, timeout: 300 * 1000}, (error, response, body) => {
         if (error) {
           console.log(error);
           self.sendSocketNotification('error', error);
