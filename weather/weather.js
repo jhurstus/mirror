@@ -24,7 +24,7 @@ Module.register("weather", {
     // If data cannot be updated before this limit, the UI will be hidden, so
     // as to prevent the display of stale forecast data.  This value MUST be
     // greater than 'updateInterval'.
-    dataAgeLimit: 1000 * 60 * 60 * 3,  // 3 hours
+    dataAgeLimit: 1000 * 60 * 60 * 1,  // 1 hours
     // Duration in milliseconds for animating in new weather data.
     animationDuration: 500  // 0.5 seconds
   },
@@ -96,6 +96,8 @@ Module.register("weather", {
       } catch (err) {
         Log.error(err.toString());
       }
+    } else if (notification && notification.startsWith('error')) {
+      this.updateDom(this.config.animationDuration);
     }
   },
 

@@ -71,6 +71,8 @@ Module.register("muni", {
       } catch (err) {
         Log.error(err);
       }
+    } else if (notification && notification.startsWith('error')) {
+      this.updateDom(this.config.animationDuration);
     }
   },
 

@@ -20,14 +20,16 @@ module.exports = nodeHelper.create({
       }
 
       var self = this;
-      request(url, (error, response, body) => {
+      request({url: url, timeout: 15 * 1000}, (error, response, body) => {
         if (error) {
           console.log(error);
+          self.sendSocketNotification('error', error);
           return;
         }
         if (response.statusCode != 200) {
           console.log(
               'predictions response status code ' + response.statusCode);
+          self.sendSocketNotification('error500', response);
           return;
         }
         self.sendSocketNotification('predictions', body);

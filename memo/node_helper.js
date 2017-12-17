@@ -12,14 +12,16 @@ module.exports = nodeHelper.create({
   socketNotificationReceived: function(notification, payload) {
     if (notification == 'memo') {
       var self = this;
-      request(payload.url, (error, response, body) => {
+      request({url: payload.url, timeout: 15 * 1000}, (error, response, body) => {
         if (error) {
           console.log(error);
+          self.sendSocketNotification('error', error);
           return;
         }
         if (response.statusCode != 200) {
           console.log(
               'memo response status code ' + response.statusCode);
+          self.sendSocketNotification('error500', response);
           return;
         }
         self.sendSocketNotification('memo', body);
