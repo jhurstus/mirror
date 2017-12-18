@@ -19,7 +19,7 @@ Module.register("weather", {
     // Time in milliseconds between weather updates.  Darksky provides 1000
     // requests per day free.  To stay under that quota, choose a config value
     // of at least ((24*60*60*1000)/1000)==86400.
-    updateInterval: 1000 * 60 * 15,  // 15 minutes
+    updateInterval: 1000 * 60 * 5,  // 5 minutes
     // The maximum age in milliseconds for which a forecast will be displayed.
     // If data cannot be updated before this limit, the UI will be hidden, so
     // as to prevent the display of stale forecast data.  This value MUST be
