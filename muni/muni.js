@@ -147,6 +147,12 @@ Module.register("muni", {
 
   // Maps muni route names to their associated icon URLs.
   getIcon: function(iconName) {
+    // Use 'J' icon for KJ joint line.  This is only correct for J line stops,
+    // but that's always the case for my house.
+    if (iconName == 'KJ') {
+      iconName = 'J';
+    }
+
     var specialIcons = ['J', 'K', 'L', 'M', 'N', 'S', 'T'];
     var iconFile = 'generic';
     var text = iconName;
