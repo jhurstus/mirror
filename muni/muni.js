@@ -95,7 +95,20 @@ Module.register("muni", {
   getViewModel: function(data) {
     var r = {predictions:[]};
 
-    var predictions = data.getElementsByTagName('predictions');
+    var predictions = Array.prototype.slice.call(
+        data.getElementsByTagName('predictions'), 0);
+    // Sort letter/rail lines before numbered bus lines.
+    predictions.sort(function(a, b) {
+      a = a.getAttribute('routeTag');
+      b = b.getAttribute('routeTag');
+      if (a.match(/[A-Z]/)) {
+        a = "0" + a;
+      }
+      if (b.match(/[A-Z]/)) {
+        b = "0" + b;
+      }
+      return a.localeCompare(b);
+    });
     for (var i = 0; i < predictions.length; i++) {
       var routeName = predictions[i].getAttribute('routeTag');
       var icon = this.getIcon(routeName);
