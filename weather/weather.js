@@ -162,8 +162,8 @@ Module.register("weather", {
     r.windSpeed = Math.round(data.currently.windSpeed);
     r.cloudCover = Math.round(100 * data.currently.cloudCover);
     var today = data.daily.data[0];
-    r.low = Math.round(today.apparentTemperatureLow);
-    r.high = Math.round(today.apparentTemperatureHigh);
+    r.low = Math.min(r.temperature, Math.round(today.apparentTemperatureLow));
+    r.high = Math.max(r.temperature, Math.round(today.apparentTemperatureHigh));
     // Show max precipitation probability for the rest of the day (to 4am),
     // instead of instantaneous probability.  This is more useful for
     // determining if you need an umbrella.
