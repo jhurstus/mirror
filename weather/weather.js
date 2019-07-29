@@ -9,9 +9,16 @@ Module.register("weather", {
     showWeeklyForecast: true,
     // Whether to show hourly weather chart.
     showChart: true,
-    // Darksky API key.  This value MUST be set for this module to work. A key
+    // Dark Sky API key.  This value MUST be set for this module to work. A key
     // can be obtained from https://darksky.net/dev/
-    apiKey: '',
+    darkSkyApiKey: '',
+    // Ambient Weather API and application key.  Falls back to darksky data if
+    // unavailable. Keys can be obtained from
+    // https://dashboard.ambientweather.net/account
+    ambientWeatherApiKey: '',
+    ambientWeatherApplicationKey: '',
+    // Ambient Weather device MAC (identifier) from which to pull data.
+    ambientWeatherDeviceMAC: '',
     // Latitude and longitude for which weather data should be displayed, in
     // 'LAT,LNG' format.  For example, 37.795444,-122.393444.  This value MUST
     // be set for this module to work.
@@ -75,18 +82,36 @@ Module.register("weather", {
     Log.info('resuming weather');
   },
 
-  // Initiates download of Darksky weather forecast data.
+  // Initiates download of weather data.
   downloadForecast: function() {
-    var url = 'https://api.darksky.net/forecast/' +
-        this.config.apiKey + '/' + this.config.latLng;
-    this.sendSocketNotification('download', url);
+    var darkskyUrl = 'https://api.darksky.net/forecast/' +
+        this.config.darkSkyApiKey + '/' + this.config.latLng;
+    this.sendSocketNotification('download', {
+      darkskyUrl: darkskyUrl,
+      ambientWeatherApiKey: this.config.ambientWeatherApiKey,
+      ambientWeatherApplicationKey: this.config.ambientWeatherApplicationKey,
+      ambientWeatherDeviceMAC: this.config.ambientWeatherDeviceMAC
+    });
   },
 
   socketNotificationReceived: function(notification, payload) {
     if (notification == 'download') {
       try {
-        var data = JSON.parse(payload);
+        var data = JSON.parse(payload.darkSky);
         if (this.isForecastDataValid(data)) {
+          // Splice realtime ambient weather data into darksky response if
+          // available.  This is done because:
+          // - Ambient Weather relies on a local sensor, which is presumably
+          //   more likely to fail than DarkSky.
+          // - Darksky provides reasonably accurate realtime data.  Timeliness
+          //   is more important than a small improvement in weather data
+          //   accuracy.
+          // - Can use just DarkSky API docs to author module (vs. a custom
+          //   synthesized data format).
+          if (this.isAmbientWeatherDataValid(payload.ambientWeather)) {
+            this.mergeDarkSkyAmbientWeather(data, payload.ambientWeather);
+          }
+
           this.forecastData = data;
           this.lastUpdateTimestamp = Date.now();
           this.updateDom(this.config.animationDuration);
@@ -290,6 +315,39 @@ Module.register("weather", {
     }
 
     return true;
+  },
+
+  // Validates Ambient Weather data has expected fields in the expected format.
+  // See https://github.com/ambient-weather/api-docs/wiki/Device-Data-Specs
+  isAmbientWeatherDataValid: function(data) {
+    if (!data || !data.length || data.length != 1) {
+      return false;
+    }
+
+    var d = data[0];
+
+    if (typeof d.feelsLike  != 'number' ||
+        typeof d.windspeedmph != 'number' ||
+        typeof d.dateutc != 'number') {
+      Log.info('missing expected ambient weather fields');
+      return false;
+    }
+
+    // Reject sensor data more than 20 minutes old; better to have more timely
+    // Darksky data.  This cutoff can be tuned as desired.
+    if (Date.now() - d.dateutc > 20 * 60 * 1000) {
+      Log.info('ambient weather data too old');
+      return false;
+    }
+
+    return true;
+  },
+
+  // Merges ambient weather data into darksky data.
+  mergeDarkSkyAmbientWeather: function(ds, aw) {
+    aw = aw[0];
+    ds.currently.apparentTemperature = aw.feelsLike;
+    ds.currently.windSpeed = aw.windspeedmph;
   },
 
   // Maps Darksky 'icon' enum values to actual icon filenames. See

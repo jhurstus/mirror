@@ -52,7 +52,7 @@ var config = {
       module: 'hurst/weather',
       position: 'top_right',
       config: {
-        apiKey: 'MUST_PUT_KEY_HERE',
+        darkSkyApiKey: 'MUST_PUT_KEY_HERE',
         latLng: '37.700000,-122.400000'
       }
     }
