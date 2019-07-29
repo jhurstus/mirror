@@ -161,6 +161,7 @@ Module.register("weather", {
     }
     r.windSpeed = Math.round(data.currently.windSpeed);
     r.cloudCover = Math.round(100 * data.currently.cloudCover);
+    r.uvIndex = data.currently.uvIndex;
     var today = data.daily.data[0];
     r.low = Math.min(r.temperature, Math.round(today.apparentTemperatureLow));
     r.high = Math.max(r.temperature, Math.round(today.apparentTemperatureHigh));
@@ -328,7 +329,8 @@ Module.register("weather", {
 
     if (typeof d.feelsLike  != 'number' ||
         typeof d.windspeedmph != 'number' ||
-        typeof d.dateutc != 'number') {
+        typeof d.dateutc != 'number' ||
+        typeof d.uv != 'number') {
       Log.info('missing expected ambient weather fields');
       return false;
     }
@@ -348,6 +350,7 @@ Module.register("weather", {
     aw = aw[0];
     ds.currently.apparentTemperature = aw.feelsLike;
     ds.currently.windSpeed = aw.windspeedmph;
+    ds.currently.uvIndex = aw.uv;
   },
 
   // Maps Darksky 'icon' enum values to actual icon filenames. See
