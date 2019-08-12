@@ -54,6 +54,8 @@ Module.register("weather", {
       this.downloadForecast();
       setInterval(this.downloadForecast.bind(this), this.config.updateInterval);
     }
+
+    this.dailyHighs = {};
   },
 
   getScripts: function() {
@@ -163,8 +165,27 @@ Module.register("weather", {
     r.cloudCover = Math.round(100 * data.currently.cloudCover);
     r.uvIndex = data.currently.uvIndex;
     var today = data.daily.data[0];
+    // If current temperature is outside forecasted high/low range, adjust
+    // forecast to include present temperature.  This prevents immediately
+    // obviously wrong displays like: current 90, lo 40, hi 80.
     r.low = Math.min(r.temperature, Math.round(today.apparentTemperatureLow));
     r.high = Math.max(r.temperature, Math.round(today.apparentTemperatureHigh));
+    // If an actual high temperature from earlier in the same day exceeds the
+    // current forecasted high, show the historical high instead.  After it has
+    // passed, this causes the correct daily historical high to be shown, rather
+    // than the forecasted high.
+    // TODO: similarly correct for lows, bearing in mind lows are 'overnight'
+    // lows, so typically span 2 days.
+    var today = new Date();
+    var dateLabel =
+        today.getFullYear() + '-' +
+        (today.getMonth() + 1) + '-' +
+        today.getDate();
+    if (typeof this.dailyHighs[dateLabel] == 'number' &&
+        this.dailyHighs[dateLabel] > r.high) {
+      r.high = this.dailyHighs[dateLabel];
+    }
+    this.dailyHighs[dateLabel] = r.high;
     // Show max precipitation probability for the rest of the day (to 4am),
     // instead of instantaneous probability.  This is more useful for
     // determining if you need an umbrella.
