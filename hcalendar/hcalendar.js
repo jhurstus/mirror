@@ -155,6 +155,10 @@ Module.register("hcalendar",{
         // 'tomorrow'.
         wrapper.insertBefore(eventWrapper, tomorrowRow);
         wrapper.appendChild(eventWrapper.cloneNode(true));
+      } else if (event.endDate > yesterdayMidnight &&
+                 event.endDate <= todayMidnight &&
+                 isMultiDayEvent) {
+        wrapper.insertBefore(eventWrapper, tomorrowRow);
       } else if (event.startDate >= todayMidnight) {
         wrapper.appendChild(eventWrapper);
       } else if (event.startDate >= yesterdayMidnight) {
