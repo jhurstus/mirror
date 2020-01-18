@@ -86,6 +86,15 @@ var CalendarFetcher = function(url, reloadInterval, maximumEntries, maximumNumbe
 						title = event.description;
 					}
 
+          // Don't show recurring Google Calendar 'goals'.  There is
+          // unfortunately no metadata that distinguishes these kinds of events
+          // in the ical export, so detect them via the auto-generated event
+          // description.
+          if (event.description &&
+              event.description.indexOf('Goals in Google Calendar') >= 0) {
+            continue;
+          }
+
 					if (typeof event.rrule != "undefined" && !isFacebookBirthday) {
 						var rule = event.rrule;
 						var dates = rule.between(today, future, true, limitFunction);
