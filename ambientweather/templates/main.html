@@ -18,26 +18,26 @@
   {{!-- current condition details --}}
   <div class="conditionDetails normal small">
     <div>
-      <span class="icon"><img src="modules/hurst/weather/public/icons/Wind.svg"></span>
+      <span class="icon"><img src="modules/hurst/ambientweather/public/icons/Wind.svg"></span>
       {{windSpeed}} mph
     </div>
     <div>
-      <span class="icon"><img src="modules/hurst/weather/public/icons/Umbrella.svg"></span>
+      <span class="icon"><img src="modules/hurst/ambientweather/public/icons/Umbrella.svg"></span>
       {{precipProbability}}%
     </div>
     <div>
-      <span class="icon"><img src="modules/hurst/weather/public/icons/Cloud.svg"></span>
+      <span class="icon"><img src="modules/hurst/ambientweather/public/icons/Cloud.svg"></span>
       {{cloudCover}}%
     </div>
     <div>
-      <span class="icon"><img src="modules/hurst/weather/public/icons/Sun.svg"></span>
+      <span class="icon"><img src="modules/hurst/ambientweather/public/icons/Sun.svg"></span>
       {{uvIndex}}
     </div>
   </div>
 
   {{!-- sunrise/sunset times --}}
   <div class="suntimeContainer normal small">
-    <span class="suntime"><img src="modules/hurst/weather/public/icons/Sunrise.svg"></span>
+    <span class="suntime"><img src="modules/hurst/ambientweather/public/icons/Sunrise.svg"></span>
     {{sunrise}} • {{sunset}}
   </div>
 
@@ -83,9 +83,9 @@
   {{!-- precipitation, temperature, and wind chart --}}
   {{#if chart}}
   <div class="chartContainer sectionSep">
-    <img src="modules/hurst/weather/public/icons/tempIcon.svg" class="tempIcon">
-    <img src="modules/hurst/weather/public/icons/windIcon.svg" class="windIcon">
-    <img src="modules/hurst/weather/public/icons/precipIcon.svg" class="precipIcon">
+    <img src="modules/hurst/ambientweather/public/icons/tempIcon.svg" class="tempIcon">
+    <img src="modules/hurst/ambientweather/public/icons/windIcon.svg" class="windIcon">
+    <img src="modules/hurst/ambientweather/public/icons/precipIcon.svg" class="precipIcon">
     <div id="chart">
     </div>
   </div>

@@ -1,4 +1,4 @@
-Module.register("weather", {
+Module.register("ambientweather", {
   defaults: {
     // Whether to load canned weather data from a stub response (for development
     // and testing).
@@ -39,7 +39,7 @@ Module.register("weather", {
   start: function() {
     Log.info('starting weather');
 
-    this.mainTemplate = Handlebars.compile(templates.weather.main);
+    this.mainTemplate = Handlebars.compile(templates.ambientweather.main);
     if (this.config.showChart) {
       google.charts.load('current', {packages: ['corechart']});
     }
@@ -61,7 +61,7 @@ Module.register("weather", {
   getScripts: function() {
     var scripts = [
       '/modules/hurst/shared/vendor/handlebars.js',
-      '/weather/templates.js'
+      '/ambientweather/templates.js'
     ];
     if (this.config.showChart) {
       scripts.push('https://www.gstatic.com/charts/loader.js');
@@ -390,7 +390,7 @@ Module.register("weather", {
       'partly-cloudy-night': 'Cloud-Moon.svg'
     };
     var iconFile = iconMap[iconName] || 'Sun.svg';
-    return 'modules/hurst/weather/public/icons/' + iconFile;
+    return 'modules/hurst/ambientweather/public/icons/' + iconFile;
   },
 
   // Injects google charts into weather dom.

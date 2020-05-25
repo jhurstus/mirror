@@ -34,6 +34,7 @@ TemplateHandler.prototype.handleRequest = function(req, res) {
     var shortFn = fn.replace(/\.html$/, '');
     templates[shortFn] = content;
   });
+  res.set('Content-Type', 'text/javascript');
   res.send('templates=window.templates||{};templates.' +
       this.name + '=' + JSON.stringify(templates));
 };

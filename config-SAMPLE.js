@@ -49,7 +49,7 @@ var config = {
       }
     },
     {
-      module: 'hurst/weather',
+      module: 'hurst/ambientweather',
       position: 'top_right',
       config: {
         darkSkyApiKey: 'MUST_PUT_KEY_HERE',
