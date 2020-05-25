@@ -37,7 +37,7 @@ Module.register("memo", {
   },
 
   socketNotificationReceived: function(notification, payload) {
-    if (notification == 'memo') {
+    if (notification == 'memo' && this.memo != payload) {
       this.memo = payload;
       this.updateDom(this.config.animationDuration);
     }
