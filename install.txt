@@ -1,0 +1,9 @@
+- install node stable arm7 arch per node instructions
+- update path in bashrc for node bin
+- restore ~/.bash_profile
+- restore ~/startmm.sh
+- restore /etc/xdg/lxsession/LXDE-pi/autostart
+- apt install unclutter
+- restore ~/.ssh
+- disable ssh password auth
+- crontab -- 0 2 * * * /usr/bin/sudo /sbin/shutdown -r now
