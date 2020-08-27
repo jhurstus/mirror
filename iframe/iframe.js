@@ -36,7 +36,9 @@ Module.register("iframe", {
   },
 
   reloadIframe: function() {
-    this.iframe.contentWindow.location.reload();
+    this.iframe.src = '';
+    // Yield to let the src unset take effect.
+    setTimeout(() => this.iframe.src = this.config.src, 1000);
   },
 
   socketNotificationReceived: function(notification, payload) {
