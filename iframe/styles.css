@@ -1,0 +1,15 @@
+.iframe-iframe {
+  border: 0;
+  padding: 0;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  top: 227px;
+  text-align: center;
+  position: absolute;
+  clip: rect(54px 556px 556px 0);
+}
+.iframe-container {
+  position: relative;
+}

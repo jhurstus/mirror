@@ -57,7 +57,18 @@ var config = {
         darkSkyApiKey: 'MUST_PUT_KEY_HERE',
         latLng: '37.700000,-122.400000'
       }
+    },
+    {
+      module: 'hurst/iframe',
+      position: 'bottom_center',
+      config: {
+        src: 'https://www.google.com/',
+        height: '100px',
+        width: '100px',
+        updateInterval: 1000 * 60 * 5
+      }
     }
+
   ]
 };
 
