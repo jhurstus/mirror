@@ -11,7 +11,7 @@ module.exports = nodeHelper.create({
 
   socketNotificationReceived: function(notification, payload) {
     if (notification == 'predictions') {
-      var url = 'http://webservices.nextbus.com' +
+      var url = 'http://retro.umoiq.com' +
           '/service/publicXMLFeed' +
           '?command=predictionsForMultiStops' +
           '&a=' + payload.agency;

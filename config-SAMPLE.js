@@ -18,8 +18,8 @@ var config = {
       position: 'top_left'
     },
     {
-      // Routes: http://webservices.nextbus.com/service/publicXMLFeed?command=routeList&a=sf-muni
-      // Stops: http://webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=sf-muni&r=<route tag>
+      // Routes: http://retro.umoiq.com/service/publicXMLFeed?command=routeList&a=sf-muni
+      // Stops: http://retro.umoiq.com/service/publicXMLFeed?command=routeConfig&a=sf-muni&r=<route tag>
       module: 'hurst/muni',
       position: 'top_left',
       config: {

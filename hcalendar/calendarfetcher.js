@@ -72,7 +72,7 @@ var CalendarFetcher = function(url, reloadInterval, maximumEntries, maximumNumbe
 						}
 					}
 
-					// calculate the duration f the event for use with recurring events.
+					// calculate the duration of the event for use with recurring events.
 					var duration = parseInt(endDate.format("x")) - parseInt(startDate.format("x"));
 
 					if (event.start.length === 8) {
@@ -95,6 +95,7 @@ var CalendarFetcher = function(url, reloadInterval, maximumEntries, maximumNumbe
             continue;
           }
 
+
 					if (typeof event.rrule != "undefined" && !isFacebookBirthday) {
 						var rule = event.rrule;
 						var dates = rule.between(today, future, true, limitFunction);
@@ -112,6 +113,7 @@ var CalendarFetcher = function(url, reloadInterval, maximumEntries, maximumNumbe
 						for (var d in dates) {
 							startDate = moment(new Date(dates[d]));
 							endDate  = moment(parseInt(startDate.format("x")) + duration, 'x');
+
 							if (endDate.format("x") > now &&
                   !excludedDates.has(endDate.format('YYYY-MM-DD'))) {
 								newEvents.push({
