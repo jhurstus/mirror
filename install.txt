@@ -1,9 +1,17 @@
-- install node stable arm7 arch per node instructions
-- update path in bashrc for node bin
+- install raspbian; sudo apt-get update, full-upgrade, autoremote; reboot
+- sudo apt-get install vim tmux unclutter
+- verify ip address assignment with home network router (if new MAC)
+- restore ~/node
+- restore: ~/.bashrc
 - restore ~/.bash_profile
 - restore ~/startmm.sh
+- restore ~/MagicMirror
+- restore ~/.ssh, .pki, .gnupg, /etc/ssh/*
+- /etc/init.d/ssh restart
+- restore crontab from ~/crontab.txt
+  0 22 * * * DISPLAY=:0 xrandr --output HDMI-1 --off
+  0 2 * * * /usr/bin/sudo /sbin/shutdown -r now
+  0 4 * * * crontab -l > /home/pi/crontab.txt
+- run deploy_mm.sh from puget to verify rsync+ssh works
+- verify startmm.sh works on pi
 - restore /etc/xdg/lxsession/LXDE-pi/autostart
-- apt install unclutter
-- restore ~/.ssh
-- disable ssh password auth
-- crontab -- 0 2 * * * /usr/bin/sudo /sbin/shutdown -r now
