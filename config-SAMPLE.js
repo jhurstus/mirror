@@ -55,7 +55,10 @@ var config = {
       position: 'top_right',
       config: {
         darkSkyApiKey: 'MUST_PUT_KEY_HERE',
-        latLng: '37.700000,-122.400000'
+        latLng: '37.700000,-122.400000',
+        purpleAirReadKey: 'MUST_PUT_KEY_HERE',
+        purpleAirNorthwestLatLng: '37.710000,-122.500000',
+        purpleAirSoutheastLatLng: '37.700000,-122.400000'
       }
     },
     {

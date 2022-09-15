@@ -33,7 +33,14 @@ Module.register("ambientweather", {
     // greater than 'updateInterval'.
     dataAgeLimit: 1000 * 60 * 60 * 1,  // 1 hours
     // Duration in milliseconds for animating in new weather data.
-    animationDuration: 500  // 0.5 seconds
+    animationDuration: 500,  // 0.5 seconds,
+    // READ key for Purple Air web API.  See https://api.purpleair.com/
+    purpleAirReadKey: '',
+    // Northwest and Southeast latitudes+longitudes, defining the rectangle from
+    // which Purple Air air quality sensor data will be drawn.
+    // 'LAT,LNG' format.  For example, 37.795444,-122.393444.
+    purpleAirNorthwestLatLng: '',
+    purpleAirSoutheastLatLng: ''
   },
 
   start: function() {
