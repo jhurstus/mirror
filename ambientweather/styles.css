@@ -76,6 +76,19 @@
   top: -13px;
   left: -45px;
 }
+.aqiContainer {
+  padding-left: 22px;
+}
+.aqi {
+  border: 1px solid white;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: bold;
+  left: -2px;
+  padding: 0 5px;
+  position: relative;
+  top: -2px;
+}
 
 .shortForecast {
   position: relative;
