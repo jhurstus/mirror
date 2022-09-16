@@ -352,6 +352,7 @@ Module.register("ambientweather", {
         const medianSensorReading =
           epaAdjustedAqis[Math.floor(epaAdjustedAqis.length / 2)];
         r.aqi = medianSensorReading;
+        r.aqiLabel = getAQILabel(medianSensorReading);
         // TODO: set AQI labels / colors.
       }
     }

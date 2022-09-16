@@ -89,6 +89,37 @@
   position: relative;
   top: -2px;
 }
+.aqihazardous {
+  color: maroon;
+}
+.aqihazardous .aqi {
+  border-color: maroon;
+}
+.aqivery-unhealthy {
+  color: purple;
+}
+.aqivery-unhealthy .aqi {
+  border-color: purple;
+}
+.aqiunhealthy {
+  color: red;
+}
+.aqiunhealthy .aqi {
+  border-color: red;
+}
+.aqiunhealthy-for-sensitive-groups {
+  color: orange;
+}
+.aqiunhealthy-for-sensitive-groups .aqi {
+  border-color: orange;
+}
+.aqimoderate {
+  color: #ebdb34;
+}
+.aqimoderate .aqi {
+  border-color: #ebdb34;
+}
+
 
 .shortForecast {
   position: relative;
