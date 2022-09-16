@@ -36,12 +36,14 @@
   </div>
 
   {{!-- sunrise/sunset times, AQI --}}
+  {{#if aqi includeZero=true}}
   <div class="suntimeContainer normal small">
     <span class="suntime"><img src="modules/hurst/ambientweather/public/icons/Sunrise.svg"></span>
     {{sunrise}} • {{sunset}}
 
     <span class="aqiContainer"><span class="aqi">AQI</span> {{aqi}}</span>
   </div>
+  {{/if}}
 
   {{!-- short forecast --}}
   <div class="shortForecast normal small">

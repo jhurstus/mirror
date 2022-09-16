@@ -319,8 +319,6 @@ Module.register("ambientweather", {
     }
 
     if (purpleAirData) {
-      // TODO: hide AQI if no data or invalid data.
-
       let sensors = purpleAirData.data;
       let validSensorData = [];
       if (sensors && sensors.length) {
@@ -355,8 +353,6 @@ Module.register("ambientweather", {
           epaAdjustedAqis[Math.floor(epaAdjustedAqis.length / 2)];
         r.aqi = medianSensorReading;
         // TODO: set AQI labels / colors.
-      } else {
-        // TODO: hide AQI UI.
       }
     }
 
