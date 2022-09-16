@@ -55,6 +55,7 @@ Module.register("ambientweather", {
       Log.info(DEBUG_DATA);
       this.lastUpdateTimestamp = Date.now();
       this.forecastData = DEBUG_DATA;
+      this.purpleAirData = PURPLE_AIR_DEBUG_DATA;
     } else {
       this.lastUpdateTimestamp = 0;
       this.forecastData = null;
@@ -75,6 +76,7 @@ Module.register("ambientweather", {
     }
     if (this.config.debug) {
       scripts.push(this.file('debug_forecast_response.js'));
+      scripts.push(this.file('debug_purpleair_response.js'));
     }
     return scripts;
   },
@@ -99,7 +101,10 @@ Module.register("ambientweather", {
       darkskyUrl: darkskyUrl,
       ambientWeatherApiKey: this.config.ambientWeatherApiKey,
       ambientWeatherApplicationKey: this.config.ambientWeatherApplicationKey,
-      ambientWeatherDeviceMAC: this.config.ambientWeatherDeviceMAC
+      ambientWeatherDeviceMAC: this.config.ambientWeatherDeviceMAC,
+      purpleAirReadKey: this.config.purpleAirReadKey,
+      purpleAirNorthwestLatLng: this.config.purpleAirNorthwestLatLng,
+      purpleAirSoutheastLatLng: this.config.purpleAirSoutheastLatLng
     });
   },
 
@@ -144,7 +149,7 @@ Module.register("ambientweather", {
     }
 
     this.dom = document.createElement('div');
-    this.viewModel = this.getViewModel(this.forecastData);
+    this.viewModel = this.getViewModel(this.forecastData, this.purpleAirData);
     this.dom.innerHTML = this.mainTemplate(this.viewModel);
 
     if (this.config.showChart) {
@@ -157,7 +162,9 @@ Module.register("ambientweather", {
   // Converts Darksky forecast api data to view model object passed to handlebar
   // templates.
   // See https://darksky.net/dev/docs for parameter format.
-  getViewModel: function(data) {
+  // See https://api.purpleair.com/#api-sensors-get-sensors-data for PurpleAir
+  // data format.
+  getViewModel: function(data, purpleAirData) {
     var r = {};
 
     // current conditions
@@ -308,6 +315,48 @@ Module.register("ambientweather", {
             ((r.dailyForecasts[i].low - weeklyMin) / temperatureRange));
         r.dailyForecasts[i].barWidth = barWidth;
         r.dailyForecasts[i].barOffset = rowOffset;
+      }
+    }
+
+    if (purpleAirData) {
+      // TODO: hide AQI if no data or invalid data.
+
+      let sensors = purpleAirData.data;
+      let validSensorData = [];
+      if (sensors && sensors.length) {
+        for (const s of sensors) {
+          if (s && s.length) {
+            const humidity = s[7];
+            const pm25 = s[10];
+            if (typeof humidity == 'number' && typeof pm25 == 'number' &&
+                pm25 >= 0 && pm25 < 1000) {
+              validSensorData.push({humidity, pm25});
+            }
+          }
+        }
+      }
+
+      // Pulling data from public Purple Air AQI monitors, which have a
+      // significant chance of being faulty.  To deal with outliers, display the
+      // median reading, requiring at least 3 sensors to produce a result.
+      const MIN_SENSOR_READINGS = 3;
+      if (validSensorData.length >= MIN_SENSOR_READINGS) {
+        // AQI is a monotonic function of pm25, but that's not the case for the
+        // EPA-adjusted values, so we have to compute final EPA-adjusted values
+        // for all sensors before sorting to find the median.
+        let epaAdjustedAqis = validSensorData.map(
+          o => getEPAAdjustedAQIFromPM25(o.pm25, o.humidity));
+        epaAdjustedAqis.sort(function(a, b) {
+          if (a < b) return -1;
+          if (a > b) return 1;
+          return 0;
+        });
+        const medianSensorReading =
+          epaAdjustedAqis[Math.floor(epaAdjustedAqis.length / 2)];
+        r.aqi = medianSensorReading;
+        // TODO: set AQI labels / colors.
+      } else {
+        // TODO: hide AQI UI.
       }
     }
 
@@ -497,3 +546,110 @@ Module.register("ambientweather", {
     chart.draw(data, options);
   }
 });
+
+// Calculates Air Quality Index (AQI) from a Purple Air PM2.5
+// microgram-per-meter-cubed concentration measurement, corrected as per
+// suggestion from EPA.
+function getEPAAdjustedAQIFromPM25(pm, humidity) {
+  return aqiFromPM25(applyEpaPM25Correction(pm, humidity));
+}
+
+// Calculates Air Quality Index (AQI) from a PM2.5 microgram-per-meter-cubed
+// concentration measurement.  See
+// https://forum.airnowtech.org/t/the-aqi-equation/169 for AQI definition.
+function aqiFromPM25(pm) {
+  // PM25 AQI is only defined for concentrations in [0, 500.4].  Clamp raw
+  // values outside that range to the respective minimum and maximum AQI
+  // values, 0 and 500.
+  if (pm <= 0) {
+    return 0;
+  }
+  if (pm >= 500.4) {
+    return 500;
+  }
+
+  // AQI is calculated from concentrations truncated to the first decimal.
+  // Purple AIR already appears to do this for their PM25 data responses, but
+  // ensure truncation here.
+  pm = Math.floor(pm * 10) / 10;
+
+  // AQI is calculated by linearly interpolating values within measured
+  // concentration buckets, which correspond to the various health
+  // designations, e.g. 'good' or 'unhealthy'.
+  // Each conditional below corresponds to one of these buckets.
+
+  if (pm >= 250.5) {
+    return lerp(pm, 301, 500, 250.5, 500.4);
+  } else if (pm >= 150.5) {
+    return lerp(pm, 201, 300, 150.5, 250.4);
+  } else if (pm >= 55.5) {
+    return lerp(pm, 151, 200, 55.5, 150.4);
+  } else if (pm >= 35.5) {
+    return lerp(pm, 101, 150, 35.5, 55.4);
+  } else if (pm >= 12.1) {
+    return lerp(pm, 51, 100, 12.1, 35.4);
+  } else if (pm >= 0) {
+    return lerp(pm, 0, 50, 0.0, 12.0);
+  }
+
+  // All possible inputs should be covered by return cases above, so this
+  // should never happen.
+  return  -1;
+}
+
+// Linearly interpolates a given PM2.5 concentration value within an AQI
+// concentration bucket.
+function lerp(pm, aqiLow, aqiHigh, concentrationLow, concentrationHigh) {
+    return Math.round(
+      ((pm - concentrationLow) / (concentrationHigh - concentrationLow)) *
+      (aqiHigh - aqiLow) + aqiLow);
+}
+
+// Translate an AQI value into a label describing the AQI bucket in which that
+// value falls.
+function getAQILabel(aqi) {
+  if (aqi >= 301) {
+    return 'hazardous';
+  } else if (aqi >= 201) {
+    return 'very-unhealthy';
+  } else if (aqi >= 151) {
+    return 'unhealthy';
+  } else if (aqi >= 101) {
+    return 'unhealthy-for-sensitive-groups';
+  } else if (aqi >= 51) {
+    return 'moderate';
+  }
+
+  // aqi <= 50
+  return 'good';
+}
+
+// Applies a correction to raw purple air PM25 measurements, as suggested by
+// the US EPA.  Formula from page 26 of
+// https://cfpub.epa.gov/si/si_public_record_report.cfm?dirEntryId=353088&Lab=CEMM
+function applyEpaPM25Correction(pm, humidity) {
+  if (pm < 0) {
+    return pm;
+  }
+
+  if (pm >= 260) {
+    return 2.966 +
+      0.69 * pm +
+      8.84 * Math.pow(10, -4) * Math.pow(pm, 2);
+  } else if (pm >= 210) {
+    // lol
+    return (0.69 * (pm/50 - 21/5) + 0.786 * (1 - (pm/50 - 21/5))) * pm -
+      0.0862 * humidity * (1 - (pm/50 - 21/5)) +
+      2.966 * (pm/50 - 21/5) +
+      5.75 * (1 - (pm/50 - 21/5)) +
+      8.84 * Math.pow(10, -4) * Math.pow(pm, 2) * (pm/50 - 21/5);
+  } else if (pm >= 50) {
+    return 0.786 * pm - 0.0862 * humidity + 5.75;
+  } else if (pm >= 30) {
+    return (0.786*(pm/20 - 3/2) + 0.524*(1 - (pm/20 - 3/2))) * pm -
+      0.0862 * humidity +
+      5.75;
+  } else { // 0 <= pm < 30
+    return 0.524*pm - 0.0862*humidity + 5.75;
+  }
+}
