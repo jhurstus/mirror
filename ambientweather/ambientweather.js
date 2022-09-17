@@ -126,6 +126,14 @@ Module.register("ambientweather", {
             this.mergeDarkSkyAmbientWeather(data, payload.ambientWeather);
           }
 
+          if (payload.purpleAir) {
+            try {
+              this.purpleAirData = JSON.parse(payload.purpleAir);
+            } catch (err) {
+              Log.error(err.toString());
+            }
+          }
+
           this.forecastData = data;
           this.lastUpdateTimestamp = Date.now();
           this.updateDom(this.config.animationDuration);
