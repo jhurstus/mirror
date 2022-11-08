@@ -100,6 +100,8 @@ var CalendarFetcher = function(url, reloadInterval, maximumEntries, maximumNumbe
 						var rule = event.rrule;
 						var dates = rule.between(today, future, true, limitFunction);
 
+            let isDstAtCreation = moment(event.created).isDST();
+
             var excludedDates = new Map();
             if (event.exdate && event.exdate.length) {
               excludedDates = new Map(event.exdate.
@@ -113,6 +115,20 @@ var CalendarFetcher = function(url, reloadInterval, maximumEntries, maximumNumbe
 						for (var d in dates) {
 							startDate = moment(new Date(dates[d]));
 							endDate  = moment(parseInt(startDate.format("x")) + duration, 'x');
+
+              if (!isFullDayEvent(event)) {
+                // rrule lib doesn't automatically adjust times for DST, so do
+                // that here.  Without this, event times will be off by an hour
+                // when the start date does not have same DST status as when the
+                // recurrence started.
+                if (startDate.isDST() && !isDstAtCreation) {
+                  startDate.subtract(1, 'h');
+                  endDate.subtract(1, 'h');
+                } else if (!startDate.isDST() && isDstAtCreation) {
+                  startDate.add(1, 'h');
+                  endDate.add(1, 'h');
+                }
+              }
 
 							if (endDate.format("x") > now &&
                   !excludedDates.has(endDate.format('YYYY-MM-DD'))) {
