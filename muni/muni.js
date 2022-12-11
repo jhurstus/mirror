@@ -31,6 +31,15 @@ Module.register("muni", {
   start: function() {
     Log.info('starting muni');
 
+    if (!this.config.key) {
+      Log.error('muni: "key" config value must be provided.');
+      return;
+    }
+    if (!this.config.stops.length) {
+      Log.error('muni: "stops" config value must be provided.');
+      return;
+    }
+
     this.mainTemplate = Handlebars.compile(templates.muni.main);
 
     this.lastUpdateTimestamp = 0;
@@ -63,7 +72,11 @@ Module.register("muni", {
   downloadPredictions: function() {
     this.sendSocketNotification(
         'predictions',
-        {agency: this.config.agency, stops: this.config.stops});
+        {
+          key: this.config.key,
+          agency: this.config.agency,
+          stops: this.config.stops.map((s) => s.stop)
+        });
   },
 
   socketNotificationReceived: function(notification, payload) {

@@ -1,6 +1,5 @@
 var nodeHelper = require('node_helper'),
     request = require('request'),
-    console = require('console'),
     TemplateHandler = require('../shared/template_handler.js');
 
 module.exports = nodeHelper.create({
@@ -11,28 +10,51 @@ module.exports = nodeHelper.create({
 
   socketNotificationReceived: function(notification, payload) {
     if (notification == 'predictions') {
-      var url = 'http://retro.umoiq.com' +
-          '/service/publicXMLFeed' +
-          '?command=predictionsForMultiStops' +
-          '&a=' + payload.agency;
-      for (var i = 0; i < payload.stops.length; i++) {
-        url += '&stops=' + payload.stops[i];
+
+      if (!payload.key ||
+          !payload.agency ||
+          !payload.stops) {
+        this.sendSocketNotification('error', 'required config not provided');
+        return;
       }
 
-      var self = this;
-      request({url: url, timeout: 15 * 1000}, (error, response, body) => {
-        if (error) {
-          console.log(error);
-          self.sendSocketNotification('error', error);
-          return;
+      const urlPrefix = 'https://api.511.org/transit/StopMonitoring' +
+          '?api_key=' + payload.key +
+          '&format=xml' +
+          '&agency=' + payload.agency;
+      const requestPromises = payload.stops.map((stop) => {
+         return new Promise(function(resolve, reject) {
+          request(
+            {
+              url: urlPrefix + '&stopcode=' + stop,
+              timeout: 15 * 1000,
+              // 511 gzip encodes responses, even if not accepted/requested, so
+              // enable it here.
+              gzip: true,
+            },
+            (error, response, body) => {
+              if (error) {
+                reject(error);
+                return;
+              }
+              if (response.statusCode != 200) {
+                reject(response);
+                return;
+              }
+              resolve(body);
+            });
+        });
+      });
+
+      Promise.allSettled(requestPromises).then((responses) => {
+        for (const r of responses) {
+          if (r.status != 'fulfilled') {
+            this.sendSocketNotification('error', r.reason);
+            return;
+          }
         }
-        if (response.statusCode != 200) {
-          console.log(
-              'predictions response status code ' + response.statusCode);
-          self.sendSocketNotification('error500', response);
-          return;
-        }
-        self.sendSocketNotification('predictions', body);
+        this.sendSocketNotification(
+          'predictions', responses.map((r) => r.value));
       });
     }
   }
