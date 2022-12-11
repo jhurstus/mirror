@@ -1,14 +1,21 @@
 Module.register("muni", {
   defaults: {
-    // Public transite agency from which to retrieve data from nextbus.  See:
-    // https://www.nextbus.com/xmlFeedDocs/NextBusXMLFeed.pdf for list of
+    // 511 developer key used to fetch transit prediction data.  See:
+    // https://511.org/open-data/token
+    // This option must be set.
+    key: '',
+    // Public transit agency from which to retrieve data from 511.
+    // http://api.511.org/transit/gtfsoperators?api_key=[your_key] for a list of
     // supported values.
-    agency: 'sf-muni',
-    // List of muni stop IDs for which to show arrival predictions.  This option
-    // MUST be set.  For example: ['48|3463'].  See:
-    // https://www.nextbus.com/xmlFeedDocs/NextBusXMLFeed.pdf
-    // ... for documentation on how to look up stop IDs.  Entries must be in the
-    // format of the 'stops' CGI arg of the 'predictionsForMultiStops' command.
+    agency: 'SF',
+    // List of 511 line+direction+stop IDs for which to show arrival
+    // predictions.  This option must be set.  For example:
+    // [{line: 'J', direction: 'IB', stop: '13463'}, ...]  See:
+    // http://api.511.org/transit/stops?api_key=[your_key]&operator_id=[operator_id]
+    // ... for a list of stops for a given agency/operator.  See:
+    // https://api.511.org/transit/StopMonitoring?api_key=[your_key]&stopcode=[stop_id]&agency=[operator_id]
+    // ... for a sample of line (<LineRef>) and direction (<DirectionRef>)
+    // values for a given stop.
     stops: [],
     // Time in milliseconds between prediction updates.
     updateInterval: 1000 * 20,  // 20 seconds

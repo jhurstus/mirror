@@ -18,12 +18,13 @@ var config = {
       position: 'top_left'
     },
     {
-      // Routes: http://retro.umoiq.com/service/publicXMLFeed?command=routeList&a=sf-muni
-      // Stops: http://retro.umoiq.com/service/publicXMLFeed?command=routeConfig&a=sf-muni&r=<route tag>
       module: 'hurst/muni',
       position: 'top_left',
       config: {
-        stops: ['48|3463']
+        // Get a key at: https://511.org/open-data/token
+        key: 'required_your_key_here',
+        // Stop list: http://api.511.org/transit/stops?api_key=[your_key]&operator_id=SF
+        stops: [{line: '48', direction: 'IB', stop: '13463'}]
       }
     },
     {
