@@ -81,10 +81,23 @@ Module.register("muni", {
 
   socketNotificationReceived: function(notification, payload) {
     if (notification == 'predictions') {
+      if (!payload || payload.length != this.config.stops.length) {
+        Log.error('Did not receive data for all requested stops.');
+        return;
+      }
+      // 511 places a Byte Order Marker character at the beginning of their XML
+      // responses, making it invalid XML.  Strip that out here before parsing.
+      const xmlText = payload.map((p) => {
+        if (p.charCodeAt(0) == 65279) { // 65279 == U+FEFF, BOM
+          return p.substr(1);
+        }
+        return p;
+      });
       try {
-        var xml = new DOMParser().parseFromString(payload, "text/xml");
-        if (this.isPredictionsDataValid(xml)) {
-          this.predictionsData = xml;
+        const xmlDocs = xmlText.map(
+          (x) => new DOMParser().parseFromString(x, "text/xml"));
+        if (this.isPredictionsDataValid(xmlDocs)) {
+          this.predictionsData = xmlDocs;
           this.lastUpdateTimestamp = Date.now();
           this.updateDom(this.config.animationDuration);
         }
@@ -109,41 +122,38 @@ Module.register("muni", {
     return this.dom;
   },
 
-  // Converts nextbus api data to view model object passed to handlebar
-  // templates.
-  // See https://www.nextbus.com/xmlFeedDocs/NextBusXMLFeed.pdf for data format.
+  // Converts 511 api data to view model object passed to handlebar templates.
   getViewModel: function(data) {
     var r = {predictions:[]};
 
-    var predictions = Array.prototype.slice.call(
-        data.getElementsByTagName('predictions'), 0);
-    // Sort letter/rail lines before numbered bus lines.
-    predictions.sort(function(a, b) {
-      a = a.getAttribute('routeTag');
-      b = b.getAttribute('routeTag');
-      if (a.match(/[A-Z]/)) {
-        a = "0" + a;
-      }
-      if (b.match(/[A-Z]/)) {
-        b = "0" + b;
-      }
-      return a.localeCompare(b);
-    });
-    for (var i = 0; i < predictions.length; i++) {
-      var routeName = predictions[i].getAttribute('routeTag');
-      var icon = this.getIcon(routeName);
-      var m = {
+    const predictedArrivalTimes = [];
+    for (let i = 0; i < data.length; i++) {
+      predictedArrivalTimes.push(
+        this.getPredictedTimes(
+          data[i],
+          this.config.stops[i].line,
+          this.config.stops[i].direction,
+          this.config.stops[i].stop));
+    }
+
+    for (let i = 0; i < predictedArrivalTimes.length; i++) {
+      const routeName = this.config.stops[i].line;
+      const icon = this.getIcon(routeName);
+      const m = {
         iconUrl: icon.url,
         iconText: icon.text,
-        times:[]
+        times: []
       };
 
-      var times = predictions[i].getElementsByTagName('prediction');
-      for (var j = 0; j < times.length && j < 3; j++) {
+      const now = new Date();
+
+      const times = predictedArrivalTimes[i];
+      for (let j = 0; j < times.length && j < 3; j++) {
+        const minutesToArrival = Math.round(Math.max(0,
+          (times[j] - now) / 60000));
+
         m.times.push({
-          minutes: times[j].getAttribute('minutes'),
-          affectedByLayover:
-              times[j].getAttribute('affectedByLayover') == 'true'
+          minutes: minutesToArrival
         });
       }
       // Show times in ascending order.
@@ -160,20 +170,71 @@ Module.register("muni", {
     return r;
   },
 
-  // Validates nextbux api data has expected fields in the expected format.
-  // See https://www.nextbus.com/xmlFeedDocs/NextBusXMLFeed.pdf for data format.
-  isPredictionsDataValid: function(data) {
-    // Ideally every utilized field of every object would be validated, but
-    // this is a hobby project, so I'm just checking that containers exist.
-    if (!data) {
-      Log.info('null prediction data.');
+  // Gets predicted arrival times from the passed 511 XML response for the given
+  // line+direction+stop.
+  getPredictedTimes: function(xml, line, direction, stop) {
+    let predictions = [...xml.querySelectorAll('MonitoredVehicleJourney')];
+    predictions = predictions.filter((p) => {
+      // Validate that returned line/direction/stop match config.
+      const lineRef = p.querySelector('LineRef');
+      if (!lineRef || lineRef.textContent != line) {
+        return false;
+      }
+      const directionRef = p.querySelector('DirectionRef');
+      if (!directionRef || directionRef.textContent != direction) {
+        return false;
+      }
+      const stopPointRef = p.querySelector('StopPointRef');
+      if (!stopPointRef || stopPointRef.textContent != stop) {
+        return false;
+      }
+
+      // Validate that there is an expected arrival time.
+      const expectedArrivalTime = p.querySelector('ExpectedArrivalTime');
+      if (!expectedArrivalTime) {
+        return false;
+      }
+      const epoch = Date.parse(expectedArrivalTime.textContent);
+      if (isNaN(epoch)) {
+        return false;
+      }
+
+      return true;
+    });
+
+    return predictions.map((p) => {
+      const expectedArrivalTime = p.querySelector('ExpectedArrivalTime');
+      const epoch = Date.parse(expectedArrivalTime.textContent);
+      return new Date(epoch);
+    });
+  },
+
+  // Validates 511 api data has expected fields in the expected format.
+  isPredictionsDataValid: function(xmlDocs) {
+    if (!xmlDocs) {
+      Log.info('empty muni prediction data');
+      return false;
+    }
+    if (xmlDocs.length != this.config.stops.length) {
+      Log.info('missing muni predictions data');
       return false;
     }
 
-    var predictions = data.getElementsByTagName('predictions');
-    if (predictions.length != this.config.stops.length) {
-      Log.info('did not receive predictions for requested stops');
+    // Do not bother updating if all configured stops returned invalid
+    // predictions.
+    const hasSomePredictions = xmlDocs.some((doc) => {
+      const status = doc.querySelector('ServiceDelivery > Status');
+      return status && status.textContent == 'true';
+    });
+    if (!hasSomePredictions) {
+      Log.info('no muni predictions returned a valid status');
+      return false;
     }
+
+    // TODO -- other things to ideally check here:
+    // - responses match requested stops
+    // - configured line+direction are valid for the requested stop
+    // - prediction times in valid format and sensible
 
     return true;
   },
