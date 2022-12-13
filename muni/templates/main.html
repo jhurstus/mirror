@@ -6,7 +6,7 @@
       <span class="routeName">{{iconText}}</span>
       {{#each times}}
         <span class="times">
-          {{minutes}}{{#if @last}}{{^}},&nbsp; {{/if}}
+          <span class="timeNumber" timestamp="{{timestamp}}">{{minutes}}</span>{{#if @last}}{{^}},&nbsp; {{/if}}
         </span>
       {{/each}}
     </li>

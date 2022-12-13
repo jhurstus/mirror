@@ -24,6 +24,12 @@ Module.register("muni", {
     // as to prevent the display of stale prediction data.  This value MUST be
     // greater than 'updateInterval'.
     dataAgeLimit: 1000 * 60 * 1,  // 1 minute
+    // Whether to update arrival times locally based on the last prediction
+    // times received from 511.
+    // True: Counts down arrival times between 'updateInterval' refreshes.
+    // False: Only updates arrival times with values directly retrieved from
+    // 511.
+    localCountdown: true,
     // Duration in milliseconds for animating in new prediction data.
     animationDuration: 0  // no animation
   },
@@ -47,6 +53,10 @@ Module.register("muni", {
     this.downloadPredictions();
     setInterval(
         this.downloadPredictions.bind(this), this.config.updateInterval);
+    if (this.config.localCountdown) {
+      setInterval(
+        this.localUpdateArrivalTimes.bind(this), 1000);
+    }
   },
 
   getScripts: function() {
@@ -146,14 +156,11 @@ Module.register("muni", {
       };
 
       const now = new Date();
-
       const times = predictedArrivalTimes[i];
-      for (let j = 0; j < times.length && j < 3; j++) {
-        const minutesToArrival = Math.round(Math.max(0,
-          (times[j] - now) / 60000));
-
+      for (const t of times) {
         m.times.push({
-          minutes: minutesToArrival
+          minutes: this.getMinutesToArrival(now, t),
+          timestamp: t.getTime()
         });
       }
       // Show times in ascending order.
@@ -258,5 +265,28 @@ Module.register("muni", {
       url: 'modules/hurst/muni/public/icons/muni_' + iconFile + '.png',
       text: text
     }
+  },
+
+  // Updates displayed arrival times previously retrieved from 511 based on
+  // elapsed wall time.
+  localUpdateArrivalTimes: function() {
+    const now = new Date();
+    const times = document.querySelectorAll('.muni .timeNumber');
+    for (const t of times) {
+      const arrivalTime = new Date(parseInt(t.getAttribute('timestamp'), 10));
+      if ((arrivalTime - now) < -60000) {
+        // Hide arrival time if it occurred over a minute in the past.  The
+        // bus/train likely already departed.
+        t.parentNode.style.display = 'none';
+      } else {
+        t.textContent = this.getMinutesToArrival(now, arrivalTime);
+      }
+    }
+  },
+
+  // Return the number of minutes between 'now' and the passed arrival time.
+  // Clamped at 0 and rounded to the nearest minute.
+  getMinutesToArrival: function(now, arrival) {
+    return Math.round(Math.max(0, (arrival - now) / 60000));
   }
 });
