@@ -14,9 +14,9 @@ module.exports = nodeHelper.create({
     if (notification == 'download') {
       var self = this;
 
-      var darkSkyPromise = new Promise(function(resolve, reject) {
+      var visualCrossingPromise = new Promise(function(resolve, reject) {
         request(
-          {url: payload.darkskyUrl, timeout: 300 * 1000},
+          {url: payload.visualCrossingUrl, timeout: 300 * 1000},
           (error, response, body) => {
             if (error) {
               console.log(error);
@@ -82,15 +82,15 @@ module.exports = nodeHelper.create({
 
 
       Promise.allSettled(
-          [darkSkyPromise, ambientWeatherPromise, purpleAirPromise]).then(
-          ([darkSky, ambientWeather, purpleAir]) => {
-            // Reject update if darksky data unavailable.
-            if (darkSky.status != 'fulfilled') {
-              this.sendSocketNotification('error', darkSky.reason);
+        [visualCrossingPromise, ambientWeatherPromise, purpleAirPromise]).then(
+          ([visualCrossing, ambientWeather, purpleAir]) => {
+            // Reject update if Visual Crossing data unavailable.
+            if (visualCrossing.status != 'fulfilled') {
+              this.sendSocketNotification('error', visualCrossing.reason);
             } else {
               this.sendSocketNotification(
                 'download', {
-                  darkSky: darkSky.value,
+                  visualCrossing: visualCrossing.value,
                   ambientWeather: ambientWeather.value,
                   purpleAir: purpleAir.value
               });

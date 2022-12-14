@@ -94,10 +94,9 @@ Module.register("ambientweather", {
 
   // Initiates download of weather data.
   downloadForecast: function() {
-    var darkskyUrl = 'https://api.darksky.net/forecast/' +
-        this.config.visualCrossingApiKey + '/' + this.config.address;
+    const visualCrossingUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(this.config.address)}?key=${this.config.visualCrossingApiKey}`;
     this.sendSocketNotification('download', {
-      darkskyUrl: darkskyUrl,
+      visualCrossingUrl: visualCrossingUrl,
       ambientWeatherApiKey: this.config.ambientWeatherApiKey,
       ambientWeatherApplicationKey: this.config.ambientWeatherApplicationKey,
       ambientWeatherDeviceMAC: this.config.ambientWeatherDeviceMAC,
@@ -110,7 +109,7 @@ Module.register("ambientweather", {
   socketNotificationReceived: function(notification, payload) {
     if (notification == 'download') {
       try {
-        var data = JSON.parse(payload.darkSky);
+        var data = JSON.parse(payload.visualCrossing);
         if (this.isForecastDataValid(data)) {
           // Splice realtime ambient weather data into darksky response if
           // available.  This is done because:
