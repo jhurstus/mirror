@@ -9,23 +9,22 @@ Module.register("ambientweather", {
     showWeeklyForecast: true,
     // Whether to show hourly weather chart.
     showChart: true,
-    // Dark Sky API key.  This value MUST be set for this module to work. A key
-    // can be obtained from https://darksky.net/dev/
-    darkSkyApiKey: '',
-    // Ambient Weather API and application key.  Falls back to darksky data if
-    // unavailable. Keys can be obtained from
+    // Visual Crossing API key.  This value MUST be set for this module to work.
+    // A key can be obtained from https://www.visualcrossing.com/
+    visualCrossingApiKey: '',
+    // Ambient Weather API and application key.  Falls back to Visual Crossing
+    // data if unavailable. Keys can be obtained from
     // https://dashboard.ambientweather.net/account
     ambientWeatherApiKey: '',
     ambientWeatherApplicationKey: '',
     // Ambient Weather device MAC (identifier) from which to pull data.
     ambientWeatherDeviceMAC: '',
-    // Latitude and longitude for which weather data should be displayed, in
-    // 'LAT,LNG' format.  For example, 37.795444,-122.393444.  This value MUST
-    // be set for this module to work.
-    latLng: '',
-    // Time in milliseconds between weather updates.  Darksky provides 1000
-    // requests per day free.  To stay under that quota, choose a config value
-    // of at least ((24*60*60*1000)/1000)==86400.
+    // Address (or lat,lng) for which weather data should be displayed.  This
+    // value MUST be set for this module to work.
+    address: '',
+    // Time in milliseconds between weather updates.  Visual Crossing provides
+    // 1000 requests per day free.  To stay under that quota, choose a config
+    // value of at least ((24*60*60*1000)/1000)==86400.
     updateInterval: 1000 * 60 * 5,  // 5 minutes
     // The maximum age in milliseconds for which a forecast will be displayed.
     // If data cannot be updated before this limit, the UI will be hidden, so
@@ -96,7 +95,7 @@ Module.register("ambientweather", {
   // Initiates download of weather data.
   downloadForecast: function() {
     var darkskyUrl = 'https://api.darksky.net/forecast/' +
-        this.config.darkSkyApiKey + '/' + this.config.latLng;
+        this.config.visualCrossingApiKey + '/' + this.config.address;
     this.sendSocketNotification('download', {
       darkskyUrl: darkskyUrl,
       ambientWeatherApiKey: this.config.ambientWeatherApiKey,
