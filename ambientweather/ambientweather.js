@@ -3,8 +3,6 @@ Module.register("ambientweather", {
     // Whether to load canned weather data from a stub response (for development
     // and testing).
     debug: false,
-    // Whether to show a textual forecast summary.
-    showForecastSummary: true,
     // Whether to show weekly forecast data.
     showWeeklyForecast: true,
     // Whether to show hourly weather chart.
@@ -94,7 +92,7 @@ Module.register("ambientweather", {
 
   // Initiates download of weather data.
   downloadForecast: function() {
-    const visualCrossingUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(this.config.address)}?key=${this.config.visualCrossingApiKey}`;
+    const visualCrossingUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(this.config.address)}?key=${this.config.visualCrossingApiKey}&unitGroup=us`;
     this.sendSocketNotification('download', {
       visualCrossingUrl: visualCrossingUrl,
       ambientWeatherApiKey: this.config.ambientWeatherApiKey,
@@ -111,17 +109,18 @@ Module.register("ambientweather", {
       try {
         var data = JSON.parse(payload.visualCrossing);
         if (this.isForecastDataValid(data)) {
-          // Splice realtime ambient weather data into darksky response if
-          // available.  This is done because:
+          // Splice realtime ambient weather data into Visual Crossing response
+          // if available.  This is done because:
           // - Ambient Weather relies on a local sensor, which is presumably
-          //   more likely to fail than DarkSky.
-          // - Darksky provides reasonably accurate realtime data.  Timeliness
-          //   is more important than a small improvement in weather data
-          //   accuracy.
-          // - Can use just DarkSky API docs to author module (vs. a custom
-          //   synthesized data format).
+          //   more likely to fail than Visual Crossing.
+          // - Visual Crossing provides reasonably accurate realtime data.
+          //   Timeliness is more important than a small improvement in weather
+          //   data accuracy.
+          // - Can use just Visual Crossing API docs to author module (vs. a
+          //   custom synthesized data format).
           if (this.isAmbientWeatherDataValid(payload.ambientWeather)) {
-            this.mergeDarkSkyAmbientWeather(data, payload.ambientWeather);
+            this.mergeVisualCrossingAmbientWeather(
+              data, payload.ambientWeather);
           }
 
           if (payload.purpleAir) {
@@ -165,31 +164,32 @@ Module.register("ambientweather", {
     return this.dom;
   },
 
-  // Converts Darksky forecast api data to view model object passed to handlebar
-  // templates.
-  // See https://darksky.net/dev/docs for parameter format.
+  // Converts Visual Crossing forecast api data to view model object passed to
+  // handlebar templates.
+  // See https://www.visualcrossing.com/resources/documentation/weather-api/timeline-weather-api/
+  // for Visual Crossing API data format.
   // See https://api.purpleair.com/#api-sensors-get-sensors-data for PurpleAir
   // data format.
   getViewModel: function(data, purpleAirData) {
     var r = {};
 
     // current conditions
-    r.temperature = Math.round(data.currently.apparentTemperature);
-    r.summary = data.hourly.summary;
+    r.temperature = Math.round(data.currentConditions.feelslike);
+    r.summary = data.description;
     if (r.summary.match(/\./g).length == 1) {
       // Remove trailing period if there's only a single sentence in the
       // summary.
       r.summary = r.summary.replace(/\.$/, '');
     }
-    r.windSpeed = Math.round(data.currently.windSpeed);
-    r.cloudCover = Math.round(100 * data.currently.cloudCover);
-    r.uvIndex = data.currently.uvIndex;
-    var today = data.daily.data[0];
+    r.windSpeed = Math.round(data.currentConditions.windspeed);
+    r.cloudCover = Math.round(data.currentConditions.cloudcover);
+    r.uvIndex = data.currentConditions.uvindex;
+    var today = data.days[0];
     // If current temperature is outside forecasted high/low range, adjust
     // forecast to include present temperature.  This prevents immediately
     // obviously wrong displays like: current 90, lo 40, hi 80.
-    r.low = Math.min(r.temperature, Math.round(today.apparentTemperatureLow));
-    r.high = Math.max(r.temperature, Math.round(today.apparentTemperatureHigh));
+    r.low = Math.min(r.temperature, Math.round(today.feelslikemin));
+    r.high = Math.max(r.temperature, Math.round(today.feelslikemax));
     // If an actual high temperature from earlier in the same day exceeds the
     // current forecasted high, show the historical high instead.  After it has
     // passed, this causes the correct daily historical high to be shown, rather
@@ -206,32 +206,38 @@ Module.register("ambientweather", {
       r.high = this.dailyHighs[dateLabel];
     }
     this.dailyHighs[dateLabel] = r.high;
+
+
+    // Hourly forecasts for the next 24 hours.
+    let hourly = data.days[0].hours.slice(today.getHours());
+    hourly = hourly.concat(data.days[1].hours.slice(0, 24 - hourly.length));
+
+
     // Show max precipitation probability for the rest of the day (to 4am),
     // instead of instantaneous probability.  This is more useful for
     // determining if you need an umbrella.
     var precipProbability = 0.0;
-    var hourly = data.hourly.data;
     var i = 0;
     do {
-      var hour = new Date(hourly[i].time * 1000).getHours();
+      var hour = parseInt(hourly[i].datetime.substr(0, 2), 10);
       precipProbability = Math.max(
-          precipProbability, hourly[i].precipProbability);
+        precipProbability, hourly[i].precipprob / 100);
       i++;
     } while (i < hourly.length && hour != 4)
     r.precipProbability = Math.round(100 * precipProbability);
     // sunrise/sunset times
-    r.sunrise = new Date(data.daily.data[0].sunriseTime * 1000)
+    r.sunrise = new Date(data.days[0].sunriseEpoch * 1000)
         .toLocaleTimeString().replace(/:\d\d\s/, '').toLowerCase();
-    r.sunset =  new Date(data.daily.data[0].sunsetTime * 1000)
+    r.sunset =  new Date(data.days[0].sunsetEpoch * 1000)
         .toLocaleTimeString().replace(/:\d\d\s/, '').toLowerCase();
     r.shortForecast = [];
     for (var i = 1; i < 3; i++) {
-      var day = data.daily.data[i];
+      var day = data.days[i];
       r.shortForecast.push({
-        low: Math.round(day.apparentTemperatureLow),
-        high: Math.round(day.apparentTemperatureHigh),
+        low: Math.round(day.feelslikemin),
+        high: Math.round(day.feelslikemax),
         iconUrl: this.getIconUrl(day.icon),
-        day: new Date(day.sunriseTime * 1000)
+        day: new Date(day.sunriseEpoch * 1000)
           .toDateString().replace(/\s.*/, '')
       });
     }
@@ -242,7 +248,7 @@ Module.register("ambientweather", {
       var alertSet = {}
       r.alerts = [];
       for (var i = 0; i < data.alerts.length; i++) {
-        var title = data.alerts[i].title;
+        var title = data.alerts[i].event;
         if (!alertSet[title]) {
           alertSet[title] = 1;
           r.alerts.push({title: title.replace("for San Francisco, CA", "")});
@@ -257,28 +263,21 @@ Module.register("ambientweather", {
       r.temperatures = [];
       r.windSpeeds = [];
       r.precipitationProbabilities = [];
-      for (var i = 0; i < 24; i++) {
-        var hour = data.hourly.data[i];
-        var h = new Date(hour.time * 1000);
+      for (let i = 0; i < hourly.length; i++) {
+        const hour = hourly[i];
+        var h = new Date(hour.datetimeEpoch * 1000);
         if (i % 4 == 2) {
-          r.hourLabels.push(new Date(hour.time * 1000)
+          r.hourLabels.push(new Date(hour.datetimeEpoch * 1000)
               .toLocaleTimeString().replace(/:\d\d:\d\d\s/, '').toLowerCase());
         } else {
           r.hourLabels.push('');
         }
-        r.precipitationProbabilities.push(hour.precipProbability);
-        r.temperatures.push(Math.round(hour.apparentTemperature));
-        r.windSpeeds.push(Math.round(hour.windSpeed));
+        r.precipitationProbabilities.push(hour.precipprob / 100);
+        r.temperatures.push(Math.round(hour.feelslike));
+        r.windSpeeds.push(Math.round(hour.windspeed));
       }
     } else {
       r.chart = false;
-    }
-
-    // forecast summaries
-    if (this.config.showForecastSummary) {
-      r.hourSummary = data.minutely.summary;
-      r.daySummary = data.hourly.summary;
-      r.weekSummary = data.daily.summary.replace('°F', '°');
     }
 
     // daily forecast
@@ -289,17 +288,17 @@ Module.register("ambientweather", {
       var opacity = 0.75;
       // skip day 0 (today) since it's covered elsewhere in the UI
       for (var i = 1; i < 7; i++) {
-        var day = data.daily.data[i];
+        var day = data.days[i];
         r.dailyForecasts.push({
-          low: Math.round(day.apparentTemperatureLow),
-          high: Math.round(day.apparentTemperatureHigh),
+          low: Math.round(day.feelslikemin),
+          high: Math.round(day.feelslikemax),
           iconUrl: this.getIconUrl(day.icon),
           opacity: opacity,
-          day: new Date(day.sunriseTime * 1000)
+          day: new Date(day.sunriseEpoch * 1000)
               .toDateString().replace(/\s.*/, '')
         });
-        weeklyMin = Math.min(weeklyMin, day.apparentTemperatureLow);
-        weeklyMax = Math.max(weeklyMax, day.apparentTemperatureHigh);
+        weeklyMin = Math.min(weeklyMin, day.feelslikemin);
+        weeklyMax = Math.max(weeklyMax, day.feelslikemax);
         opacity -= 0.1;
       }
 
@@ -366,9 +365,9 @@ Module.register("ambientweather", {
     return r;
   },
 
-  // Validates Darksky forecast api data has expected fields in the expected
-  // format.
-  // See https://darksky.net/dev/docs for parameter format.
+  // Validates Visual Crossing forecast api data has expected fields in the
+  // expected format.
+  // See https://www.visualcrossing.com/resources/documentation/weather-api/timeline-weather-api/
   isForecastDataValid: function(data) {
     // Ideally every utilized field of every object would be validated, but
     // this is a hobby project, so I'm just checking that containers exist.
@@ -376,21 +375,15 @@ Module.register("ambientweather", {
       Log.info('null weather data.');
       return false;
     }
-    if (!data.currently) {
+    if (!data.currentConditions) {
       Log.info('missing current weather data');
       return false;
     }
-    if (!data.daily || !data.daily.data || data.daily.data.length < 7) {
+    if (!data.days || data.days.length < 7) {
       Log.info('missing daily forecasts');
       return false;
     }
-    if (!data.minutely || !data.minutely.summary ||
-        !data.hourly || !data.hourly.summary ||
-        !data.daily || !data.daily.summary) {
-      Log.info('missing forecast summaries');
-      return false;
-    }
-    if (!data.hourly || !data.hourly.data || data.hourly.data.length < 24) {
+    if (!data.days[0].hours || data.days[0].hours < 24) {
       Log.info('missing hourly forecasts');
       return false;
     }
@@ -416,7 +409,7 @@ Module.register("ambientweather", {
     }
 
     // Reject sensor data more than 20 minutes old; better to have more timely
-    // Darksky data.  This cutoff can be tuned as desired.
+    // Visual Crossing data.  This cutoff can be tuned as desired.
     if (Date.now() - d.dateutc > 20 * 60 * 1000) {
       Log.info('ambient weather data too old');
       return false;
@@ -425,16 +418,15 @@ Module.register("ambientweather", {
     return true;
   },
 
-  // Merges ambient weather data into darksky data.
-  mergeDarkSkyAmbientWeather: function(ds, aw) {
+  // Merges ambient weather data into visual crossing data.
+  mergeVisualCrossingAmbientWeather: function(ds, aw) {
     aw = aw[0];
-    ds.currently.apparentTemperature = aw.feelsLike;
-    ds.currently.windSpeed = aw.windspeedmph;
-    ds.currently.uvIndex = aw.uv;
+    ds.currentConditions.feelslike = aw.feelsLike;
+    ds.currentConditions.windspeed = aw.windspeedmph;
+    ds.currentConditions.uvindex = aw.uv;
   },
 
-  // Maps Darksky 'icon' enum values to actual icon filenames. See
-  // https://darksky.net/dev/docs for icon enum definition.
+  // Maps Visual Crossing 'icon' enum values to actual icon filenames.
   getIconUrl: function(iconName) {
     var iconMap = {
       'clear-day': 'Sun.svg',
