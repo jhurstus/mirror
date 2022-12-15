@@ -68,22 +68,6 @@
   </div>
   {{/if}}
 
-  {{!-- forecast summaries --}}
-  {{#if hourSummary}}
-  <div class="forecastSummary sectionSep">
-    <div class="forecastSummaryTitle small">next hour</div>
-    <div class="forecastSummaryText">{{hourSummary}}</div>
-  </div>
-  <div class="forecastSummary">
-    <div class="forecastSummaryTitle small">next 24 hours</div>
-    <div class="forecastSummaryText">{{daySummary}}</div>
-  </div>
-  <div class="forecastSummary">
-    <div class="forecastSummaryTitle small">next 7 days</div>
-    <div class="forecastSummaryText">{{weekSummary}}</div>
-  </div>
-  {{/if}}
-
   {{!-- precipitation, temperature, and wind chart --}}
   {{#if chart}}
   <div class="chartContainer sectionSep">
