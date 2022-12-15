@@ -115,6 +115,7 @@ Module.register("muni", {
         Log.error(err);
       }
     } else if (notification && notification.startsWith('error')) {
+      Log.error(payload);
       this.updateDom(this.config.animationDuration);
     }
   },
