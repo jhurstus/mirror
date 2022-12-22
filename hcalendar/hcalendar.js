@@ -148,6 +148,10 @@ Module.register("hcalendar",{
       var todayMidnight = yesterdayMidnight + one_day;
       var tomorrowMidnight = todayMidnight + one_day;
 
+      if (event.startDate >= tomorrowMidnight) {
+        continue;
+      }
+
       if (event.startDate <= yesterdayMidnight &&
           event.endDate > todayMidnight &&
           isMultiDayEvent) {
