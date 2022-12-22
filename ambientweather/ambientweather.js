@@ -174,8 +174,9 @@ Module.register("ambientweather", {
     var r = {};
 
     // current conditions
+    var today = data.days[0];
     r.temperature = Math.round(data.currentConditions.feelslike);
-    r.summary = data.description;
+    r.summary = today.description;
     if (r.summary.match(/\./g).length == 1) {
       // Remove trailing period if there's only a single sentence in the
       // summary.
@@ -184,7 +185,6 @@ Module.register("ambientweather", {
     r.windSpeed = Math.round(data.currentConditions.windspeed);
     r.cloudCover = Math.round(data.currentConditions.cloudcover);
     r.uvIndex = data.currentConditions.uvindex;
-    var today = data.days[0];
     // If current temperature is outside forecasted high/low range, adjust
     // forecast to include present temperature.  This prevents immediately
     // obviously wrong displays like: current 90, lo 40, hi 80.
