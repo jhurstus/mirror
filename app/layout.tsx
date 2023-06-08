@@ -1,7 +1,10 @@
 import './globals.css'
-import { Inter } from 'next/font/google'
+import { Roboto_Condensed } from 'next/font/google'
 
-const inter = Inter({ subsets: ['latin'] })
+const robotoCondensed = Roboto_Condensed({
+  subsets: ['latin'],
+  weight: ['300', '400', '700'],
+});
 
 export const metadata = {
   title: 'Mirror',
@@ -15,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={robotoCondensed.className}>{children}</body>
     </html>
   )
 }
