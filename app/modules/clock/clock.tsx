@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react';
+import { useEffect, useState } from 'react';
 import './clock.css'
 
 const LOCALE = 'en-US';
@@ -55,26 +55,26 @@ function getNextUpdateDelayMilliseconds(): number {
  */
 export default function Clock() {
   const currentDate = new Date();
-  const [dateTime, setDateTime] = React.useState(currentDate);
-
-  // The last Date minute value that was rendered.  If current Date minute is
-  // different, the component needs to update.  Tracking minute in particular
-  // because it is the value updated at the greatest frequency in the UI.
-  let lastRenderedMinute = currentDate.getMinutes();
-
-  let updateTimerId: number | undefined;
-
-  function updateLoop(): void {
-    const date = new Date();
-    if (date.getMinutes() != lastRenderedMinute) {
-      lastRenderedMinute = date.getMinutes();
-      setDateTime(date);
-    }
-    updateTimerId = window.setTimeout(updateLoop, getNextUpdateDelayMilliseconds());
-  }
+  const [dateTime, setDateTime] = useState(currentDate);
 
   // Stop/start clock update loop on Component un/mount.
-  React.useEffect(() => {
+  useEffect(() => {
+    // The last Date minute value that was rendered.  If current Date minute is
+    // different, the component needs to update.  Tracking minute in particular
+    // because it is the value updated at the greatest frequency in the UI.
+    let lastRenderedMinute = -1;
+
+    let updateTimerId: number | undefined;
+
+    function updateLoop(): void {
+      const date = new Date();
+      if (date.getMinutes() != lastRenderedMinute) {
+        lastRenderedMinute = date.getMinutes();
+        setDateTime(date);
+      }
+      updateTimerId = window.setTimeout(updateLoop, getNextUpdateDelayMilliseconds());
+    }
+
     updateLoop();
 
     return () => {
