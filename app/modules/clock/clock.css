@@ -1,7 +1,10 @@
 .date {
-  font-size: 1em;
+  font-size: 3rem;
+  line-height: 3.5rem;
 }
 
 .time {
-  font-size: 2em;
+  font-size: 6.5rem;
+  font-weight: 300;
+  line-height: 6.5rem;
 }
