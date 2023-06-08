@@ -1,4 +1,4 @@
-import Clock from '../modules/clock/clock'
+import Clock from './modules/clock/clock'
 
 export default function Home() {
   return (
