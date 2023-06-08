@@ -73,14 +73,14 @@ export default function Clock() {
     updateTimerId = window.setTimeout(updateLoop, getNextUpdateDelayMilliseconds());
   }
 
-  // Stop clock update loop when Component is about to unmount.
+  // Stop/start clock update loop on Component un/mount.
   React.useEffect(() => {
+    updateLoop();
+
     return () => {
       window.clearTimeout(updateTimerId);
     };
   }, []);
-
-  updateLoop();
 
   return (
     <div>
