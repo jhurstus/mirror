@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react';
-import './clock.css'
+import styles from './clock.module.css'
 
 const LOCALE = 'en-US';
 
@@ -84,8 +84,8 @@ export default function Clock() {
 
   return (
     <div>
-      <div className="date">{formatDate(dateTime)}</div>
-      <div className="time">{formatTime(dateTime)}</div>
+      <div className={styles.date}>{formatDate(dateTime)}</div>
+      <div className={styles.time}>{formatTime(dateTime)}</div>
     </div>
   )
 }
