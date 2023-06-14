@@ -7,25 +7,25 @@ export type MuniProps = {
   // Public transit agency from which to retrieve data from 511.
   // http://api.511.org/transit/gtfsoperators?api_key=[your_key] for a list of
   // supported values.
-  agency: string;
+  agency?: string;
   // List of 511 line+direction+stop IDs for which to show arrival predictions.
   // For example:
   // [{line: 'J', direction: 'IB', stop: '13463'}, ...]
   stops: [RouteConfig, ...RouteConfig[]];
   // Time in milliseconds between prediction updates.
-  updateInterval: number;
+  updateInterval?: number;
   // The maximum age in milliseconds for which predictions will be displayed.
   // If data cannot be updated before this limit, the UI will be hidden, so as
   // to prevent the display of stale prediction data.  This value MUST be
   // greater than 'updateInterval'.
-  dataAgeLimit: number;
+  dataAgeLimit?: number;
   // Whether to update arrival times locally based on the last prediction times
   // received from 511.
   // True: Counts down arrival times between 'updateInterval' refreshes.
   // False: Only updates arrival times with values directly retrieved from 511.
-  localCountdown: boolean;
+  localCountdown?: boolean;
   // Duration in milliseconds for animating in new prediction data.
-  animationDuration: number;
+  animationDuration?: number;
 };
 
 // See:
@@ -96,7 +96,7 @@ function ArrivalTime({ predictedArrivalTimestamp, isLastTime }: ArrivalTimeProps
     <span className="times">
       <span
         className="timeNumber"
-        data-timestamp={predictedArrivalTimestamp}>{minutesToArrival}</span>{isLastTime ? '' : ',&nbsp; '}
+        data-timestamp={predictedArrivalTimestamp}>{minutesToArrival}</span>{!isLastTime && (',' + String.fromCharCode(160)/*&nbsp;*/ + ' ')}
     </span>
   )
 }
@@ -319,7 +319,7 @@ function getIcon(iconName: string): { iconPath: string, iconText: string } {
     iconText = iconName;
   }
   return {
-    iconPath: '/public/modules/muni/icons/muni_' + iconFile + '.png',
+    iconPath: '/modules/muni/icons/muni_' + iconFile + '.png',
     iconText
   };
 }
