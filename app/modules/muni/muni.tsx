@@ -51,7 +51,7 @@ export default function Muni({
 }: MuniProps) {
   const data = [{ routeName: 'J', arrivalTimes: [0, 1, 2] }];
   return (
-    <div className="muni">
+    <div className={styles.muni}>
       <ul>
         {data.map((d) => <TransitStop routeName={d.routeName} arrivalTimes={d.arrivalTimes} />)}
       </ul>
@@ -70,7 +70,7 @@ function TransitStop({ routeName, arrivalTimes }: TransitStopProps) {
   return (
     <li className="normal">
       <img src={iconPath} height="40" width="40" />
-      <span className="routeName">{iconText}</span>
+      <span className={styles.routeName}>{iconText}</span>
       {arrivalTimes.map((time, i) =>
         <ArrivalTime
           predictedArrivalTimestamp={time}
@@ -93,7 +93,7 @@ function ArrivalTime({ predictedArrivalTimestamp, isLastTime }: ArrivalTimeProps
       (predictedArrivalTimestamp - now.getTime()) / (60 * 1000)));
 
   return (
-    <span className="times">
+    <span className={styles.times}>
       <span
         className="timeNumber"
         data-timestamp={predictedArrivalTimestamp}>{minutesToArrival}</span>{!isLastTime && (',' + String.fromCharCode(160)/*&nbsp;*/ + ' ')}
