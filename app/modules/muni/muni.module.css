@@ -1,18 +1,15 @@
 .muni {
-  margin-top: 86px;
-}
-
-.muni > ul {
+  font-size: 2.4rem;
   list-style-type: none;
+  margin-top: 86px;
   padding-left: 2px;
 }
-.muni > ul img {
+.muni li {
+  position: relative;
+}
+.muni img {
   position: relative;
   top: 13px;
-}
-.muni > ul li {
-  font-size: 0.75em;
-  position: relative;
 }
 .routeName {
   position: absolute;
@@ -23,6 +20,5 @@
 }
 .times {
   position: relative;
-  left: 10px;
-  color: #fff;
+  left: 19px;
 }

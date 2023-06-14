@@ -51,12 +51,10 @@ export default function Muni({
 }: MuniProps) {
   const data = [{ routeName: 'J', arrivalTimes: [0, 1, 2] }];
   return (
-    <div className={styles.muni}>
-      <ul>
-        {/* Stop list is immutable, so index is a suitable key in this case. */}
-        {data.map((d, i) => <TransitStop routeName={d.routeName} arrivalTimes={d.arrivalTimes} key={i} />)}
-      </ul>
-    </div>
+    <ul className={styles.muni}>
+      {/* Stop list is immutable, so index is a suitable key in this case. */}
+      {data.map((d, i) => <TransitStop routeName={d.routeName} arrivalTimes={d.arrivalTimes} key={i} />)}
+    </ul>
   )
 }
 
@@ -72,13 +70,15 @@ function TransitStop({ routeName, arrivalTimes }: TransitStopProps) {
     <li className="normal">
       <img src={iconPath} height="40" width="40" />
       <span className={styles.routeName}>{iconText}</span>
-      {arrivalTimes.map((time, i) =>
-        // Arrival times have no suitable UUID, so just use index for key.
-        <ArrivalTime
-          predictedArrivalTimestamp={time}
-          isLastTime={i == arrivalTimes.length - 1}
-          key={i}
+      <span className={styles.times}>
+        {arrivalTimes.map((time, i) =>
+          // Arrival times have no suitable UUID, so just use index for key.
+          <ArrivalTime
+            predictedArrivalTimestamp={time}
+            isLastTime={i == arrivalTimes.length - 1}
+            key={i}
           />)}
+      </span>
     </li>
   )
 }
@@ -97,10 +97,9 @@ function ArrivalTime({ predictedArrivalTimestamp, isLastTime }: ArrivalTimeProps
       (predictedArrivalTimestamp - now.getTime()) / (60 * 1000)));
 
   return (
-    <span className={styles.times}>
-      <span
-        className="timeNumber"
-        data-timestamp={predictedArrivalTimestamp}>{minutesToArrival}</span>{!isLastTime && (',' + String.fromCharCode(160)/*&nbsp;*/ + ' ')}
+    <span data-timestamp={predictedArrivalTimestamp}>
+      {minutesToArrival}
+      {!isLastTime && (',' + String.fromCharCode(160)/*&nbsp;*/ + ' ')}
     </span>
   )
 }
