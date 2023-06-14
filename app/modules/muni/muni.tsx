@@ -3,7 +3,7 @@ import styles from './muni.module.css'
 export type MuniProps = {
   // 511 developer key used to fetch transit prediction data.  See:
   // https://511.org/open-data/token
-  key: string;
+  developerKey: string;
   // Public transit agency from which to retrieve data from 511.
   // http://api.511.org/transit/gtfsoperators?api_key=[your_key] for a list of
   // supported values.
@@ -41,7 +41,7 @@ export type RouteConfig = {
 };
 
 export default function Muni({
-  key,
+  developerKey,
   agency = 'SF',
   stops,
   updateInterval = 1000 * 20,
@@ -53,7 +53,8 @@ export default function Muni({
   return (
     <div className={styles.muni}>
       <ul>
-        {data.map((d) => <TransitStop routeName={d.routeName} arrivalTimes={d.arrivalTimes} />)}
+        {/* Stop list is immutable, so index is a suitable key in this case. */}
+        {data.map((d, i) => <TransitStop routeName={d.routeName} arrivalTimes={d.arrivalTimes} key={i} />)}
       </ul>
     </div>
   )
@@ -72,9 +73,12 @@ function TransitStop({ routeName, arrivalTimes }: TransitStopProps) {
       <img src={iconPath} height="40" width="40" />
       <span className={styles.routeName}>{iconText}</span>
       {arrivalTimes.map((time, i) =>
+        // Arrival times have no suitable UUID, so just use index for key.
         <ArrivalTime
           predictedArrivalTimestamp={time}
-          isLastTime={i == arrivalTimes.length - 1} />)}
+          isLastTime={i == arrivalTimes.length - 1}
+          key={i}
+          />)}
     </li>
   )
 }
