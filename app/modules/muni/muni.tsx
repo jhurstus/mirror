@@ -69,7 +69,7 @@ function TransitStop({ routeName, arrivalTimes }: TransitStopProps) {
   return (
     <li className="normal">
       <img src={iconPath} height="40" width="40" />
-      <span className={styles.routeName}>{iconText}</span>
+      {iconText && <span className={styles.routeName}>{iconText}</span>}
       <span className={styles.times}>
         {arrivalTimes.map((time, i) =>
           // Arrival times have no suitable UUID, so just use index for key.
