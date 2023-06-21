@@ -1,4 +1,8 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import styles from './muni.module.css'
+import { Response } from '@/pages/api/modules/muni/muni';
 
 export type MuniProps = {
   // 511 developer key used to fetch transit prediction data.  See:
@@ -8,9 +12,9 @@ export type MuniProps = {
   // http://api.511.org/transit/gtfsoperators?api_key=[your_key] for a list of
   // supported values.
   agency?: string;
-  // List of 511 line+direction+stop IDs for which to show arrival predictions.
+  // List of 511 routeName+direction+stopIds for which to show arrival predictions.
   // For example:
-  // [{line: 'J', direction: 'IB', stop: '13463'}, ...]
+  // [{routeName: 'J', direction: 'IB', stopId: '13463'}, ...]
   stops: [RouteConfig, ...RouteConfig[]];
   // Time in milliseconds between prediction updates.
   updateInterval?: number;
@@ -32,13 +36,15 @@ export type MuniProps = {
 // http://api.511.org/transit/stops?api_key=[your_key]&operator_id=[operator_id]
 // ... for a list of stops for a given agency/operator.  See:
 // https://api.511.org/transit/StopMonitoring?api_key=[your_key]&stopcode=[stop_id]&agency=[operator_id]
-// ... for a sample of line (<LineRef>) and direction (<DirectionRef>) values
+// ... for a sample of routeName (<LineRef>) and direction (<DirectionRef>) values
 // for a given stop.
 export type RouteConfig = {
-  line: string;
+  routeName: string;
   direction: string;
-  stop: string;
+  stopId: string;
 };
+
+type Nullable<T> = T | null;
 
 export default function Muni({
   developerKey,
@@ -49,11 +55,26 @@ export default function Muni({
   localCountdown = true,
   animationDuration = 0,
 }: MuniProps) {
-  const data = [{ routeName: 'J', arrivalTimes: [0, 1, 2] }];
+  const [data, setData] = useState<Nullable<Response>>(null);
+
+  useEffect(() => {
+    fetch(
+      `/api/modules/muni/muni?key=${developerKey}&agency=${agency}&stops=${encodeURIComponent(JSON.stringify(stops))}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data);
+      }).catch((e) => console.error(e));
+  }, []);
+
+  if (!data) return <div></div>;
+  if ('error' in data) {
+    console.error(data.error);
+    return <div></div>;
+  }
+
   return (
     <ul className={styles.muni}>
-      {/* Stop list is immutable, so index is a suitable key in this case. */}
-      {data.map((d, i) => <TransitStop routeName={d.routeName} arrivalTimes={d.arrivalTimes} key={i} />)}
+      {data.map((d, i) => <TransitStop routeName={d.routeName} arrivalTimes={d.arrivalTimes} key={d.stopId} />)}
     </ul>
   )
 }

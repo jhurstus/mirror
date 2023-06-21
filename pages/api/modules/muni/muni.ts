@@ -3,9 +3,9 @@ import JSDOM from 'jsdom'
 
 // A transit stop.
 export type Stop = {
-  line: string;
+  routeName: string;
   direction: string;
-  stop: string;
+  stopId: string;
 };
 export type Stops = Stop[];
 
@@ -13,9 +13,9 @@ export type Stops = Stop[];
 function isStops(stops: any): stops is Stops {
   if (!(stops instanceof Array)) return false;
   for (const s of stops) {
-    if (typeof s.line != 'string' ||
+    if (typeof s.routeName != 'string' ||
       typeof s.direction != 'string' ||
-      typeof s.stop != 'string') {
+      typeof s.stopId != 'string') {
       return false;
     }
   }
@@ -34,7 +34,8 @@ export type Error = {
   error: string;
 };
 export type Prediction = {
-  stop: string;
+  stopId: string;
+  routeName: string;
   arrivalTimes: number[];
 };
 export type Success = Prediction[];
@@ -104,7 +105,7 @@ async function get511StopPredictions(
   try {
     fetchResponseTexts = await Promise.all(stops.map((stop) => {
       return fetch(
-        `${urlPrefix}&stopcode=${stop.stop}`,
+        `${urlPrefix}&stopcode=${stop.stopId}`,
         { signal: abortController.signal })
         .then((r) => r.text());
     }));
@@ -148,7 +149,7 @@ function getStopPredictionJson(stops: Stops, xmlResponses: string[]): Success {
     for (const prediction of xml.querySelectorAll('monitoredvehiclejourney')) {
       // Validate that returned line/direction/stop match config.
       const lineRef = prediction.querySelector('lineref');
-      if (!lineRef || lineRef.textContent != stop.line) {
+      if (!lineRef || lineRef.textContent != stop.routeName) {
         continue;
       }
       const directionRef = prediction.querySelector('directionref');
@@ -156,7 +157,7 @@ function getStopPredictionJson(stops: Stops, xmlResponses: string[]): Success {
         continue;
       }
       const stopPointRef = prediction.querySelector('stoppointref');
-      if (!stopPointRef || stopPointRef.textContent != stop.stop) {
+      if (!stopPointRef || stopPointRef.textContent != stop.stopId) {
         continue;
       }
 
@@ -174,7 +175,8 @@ function getStopPredictionJson(stops: Stops, xmlResponses: string[]): Success {
     }
 
     predictions.push({
-      stop: stop.stop,
+      stopId: stop.stopId,
+      routeName: stop.routeName,
       arrivalTimes: arrivalTimes,
     });
   }
