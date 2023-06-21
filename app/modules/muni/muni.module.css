@@ -6,6 +6,7 @@
 }
 .muni li {
   position: relative;
+  padding-bottom: 9px;
 }
 .muni img {
   position: relative;
@@ -13,12 +14,14 @@
 }
 .routeName {
   position: absolute;
-  top: 9px;
-  left: 8px;
+  top: 18px;
+  left: 0;
   color: #000;
   font-weight: bold;
+  text-align: center;
+  width: 40px;
 }
 .times {
   position: relative;
-  left: 19px;
+  left: 15px;
 }
