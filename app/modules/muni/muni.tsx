@@ -117,31 +117,7 @@ function ArrivalTime({ predictedArrivalTimestamp, isLastTime }: ArrivalTimeProps
 //     }
 //   }
 // 
-//   // Initiates download of muni prediction data.
-//   function downloadPredictions() {
-//     this.sendSocketNotification(
-//         'predictions',
-//         {
-//           key: this.config.key,
-//           agency: this.config.agency,
-//           stops: this.config.stops.map((s) => s.stop)
-//         });
-//   }
-// 
 //   function socketNotificationReceived(notification, payload) {
-//     if (notification == 'predictions') {
-//       if (!payload || payload.length != this.config.stops.length) {
-//         Log.error('Did not receive data for all requested stops.');
-//         return;
-//       }
-//       // 511 places a Byte Order Marker character at the beginning of their XML
-//       // responses, making it invalid XML.  Strip that out here before parsing.
-//       const xmlText = payload.map((p) => {
-//         if (p.charCodeAt(0) == 65279) { // 65279 == U+FEFF, BOM
-//           return p.substr(1);
-//         }
-//         return p;
-//       });
 //       try {
 //         const xmlDocs = xmlText.map(
 //           (x) => new DOMParser().parseFromString(x, "text/xml"));
@@ -215,75 +191,6 @@ function ArrivalTime({ predictedArrivalTimestamp, isLastTime }: ArrivalTimeProps
 //     }
 // 
 //     return r;
-//   }
-// 
-//   // Gets predicted arrival times from the passed 511 XML response for the given
-//   // line+direction+stop.
-//   function getPredictedTimes(xml, line, direction, stop) {
-//     let predictions = [...xml.querySelectorAll('MonitoredVehicleJourney')];
-//     predictions = predictions.filter((p) => {
-//       // Validate that returned line/direction/stop match config.
-//       const lineRef = p.querySelector('LineRef');
-//       if (!lineRef || lineRef.textContent != line) {
-//         return false;
-//       }
-//       const directionRef = p.querySelector('DirectionRef');
-//       if (!directionRef || directionRef.textContent != direction) {
-//         return false;
-//       }
-//       const stopPointRef = p.querySelector('StopPointRef');
-//       if (!stopPointRef || stopPointRef.textContent != stop) {
-//         return false;
-//       }
-// 
-//       // Validate that there is an expected arrival time.
-//       const expectedArrivalTime = p.querySelector('ExpectedArrivalTime');
-//       if (!expectedArrivalTime) {
-//         return false;
-//       }
-//       const epoch = Date.parse(expectedArrivalTime.textContent);
-//       if (isNaN(epoch)) {
-//         return false;
-//       }
-// 
-//       return true;
-//     });
-// 
-//     return predictions.map((p) => {
-//       const expectedArrivalTime = p.querySelector('ExpectedArrivalTime');
-//       const epoch = Date.parse(expectedArrivalTime.textContent);
-//       return new Date(epoch);
-//     });
-//   }
-// 
-//   // Validates 511 api data has expected fields in the expected format.
-//   function isPredictionsDataValid(xmlDocs) {
-//     if (!xmlDocs) {
-//       Log.info('empty muni prediction data');
-//       return false;
-//     }
-//     if (xmlDocs.length != this.config.stops.length) {
-//       Log.info('missing muni predictions data');
-//       return false;
-//     }
-// 
-//     // Do not bother updating if all configured stops returned invalid
-//     // predictions.
-//     const hasSomePredictions = xmlDocs.some((doc) => {
-//       const status = doc.querySelector('ServiceDelivery > Status');
-//       return status && status.textContent == 'true';
-//     });
-//     if (!hasSomePredictions) {
-//       Log.info('no muni predictions returned a valid status');
-//       return false;
-//     }
-// 
-//     // TODO -- other things to ideally check here:
-//     // - responses match requested stops
-//     // - configured line+direction are valid for the requested stop
-//     // - prediction times in valid format and sensible
-// 
-//     return true;
 //   }
 // 
 // 
