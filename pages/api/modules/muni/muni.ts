@@ -174,6 +174,12 @@ function getStopPredictionJson(stops: Stops, xmlResponses: string[]): Success {
       arrivalTimes.push(epoch);
     }
 
+    // List times in ascending order.
+    arrivalTimes.sort();
+    // Only return three most recent times because predictions for more distant
+    // times are typically very inaccurate.
+    arrivalTimes.splice(3);
+
     predictions.push({
       stopId: stop.stopId,
       routeName: stop.routeName,

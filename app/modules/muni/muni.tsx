@@ -56,19 +56,33 @@ export default function Muni({
   animationDuration = 0,
 }: MuniProps) {
   const [data, setData] = useState<Nullable<Response>>(null);
+  const [lastUpdatedTimestamp, setLastUpdatedTimestamp] = useState(0);
 
   useEffect(() => {
-    fetch(
-      `/api/modules/muni/muni?key=${developerKey}&agency=${agency}&stops=${encodeURIComponent(JSON.stringify(stops))}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-      }).catch((e) => console.error(e));
+    function fetchMuniData() {
+      fetch(
+        `/api/modules/muni/muni?key=${developerKey}&agency=${agency}&stops=${encodeURIComponent(JSON.stringify(stops))}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setLastUpdatedTimestamp(Date.now());
+          setData(data);
+        }).catch((e) => console.error(e));
+    }
+    fetchMuniData();
+
+    const fetchMuniDataIntervalId =
+      window.setInterval(fetchMuniData, updateInterval);
+    return () => {
+      window.clearInterval(fetchMuniDataIntervalId);
+    };
   }, []);
 
   if (!data) return <div></div>;
   if ('error' in data) {
     console.error(data.error);
+    return <div></div>;
+  }
+  if ((Date.now() - lastUpdatedTimestamp) > dataAgeLimit) {
     return <div></div>;
   }
 
@@ -127,91 +141,10 @@ function ArrivalTime({ predictedArrivalTimestamp, isLastTime }: ArrivalTimeProps
 
 
 // function start() {
-//     this.lastUpdateTimestamp = 0;
-//     this.predictionsData = null;
-//     this.downloadPredictions();
-//     setInterval(
-//         this.downloadPredictions.bind(this), this.config.updateInterval);
 //     if (this.config.localCountdown) {
 //       setInterval(
 //         this.localUpdateArrivalTimes.bind(this), 1000);
 //     }
-//   }
-// 
-//   function socketNotificationReceived(notification, payload) {
-//       try {
-//         const xmlDocs = xmlText.map(
-//           (x) => new DOMParser().parseFromString(x, "text/xml"));
-//         if (this.isPredictionsDataValid(xmlDocs)) {
-//           this.predictionsData = xmlDocs;
-//           this.lastUpdateTimestamp = Date.now();
-//           this.updateDom(this.config.animationDuration);
-//         }
-//       } catch (err) {
-//         Log.error(err);
-//       }
-//     } else if (notification && notification.startsWith('error')) {
-//       Log.error(payload);
-//       this.updateDom(this.config.animationDuration);
-//     }
-//   }
-// 
-//   function getDom() {
-//     if (!this.predictionsData ||
-//         (Date.now() - this.lastUpdateTimestamp) > this.config.dataAgeLimit) {
-//       return document.createElement('div');
-//     }
-// 
-//     this.dom = document.createElement('div');
-//     this.viewModel = this.getViewModel(this.predictionsData);
-//     this.dom.innerHTML = this.mainTemplate(this.viewModel);
-// 
-//     return this.dom;
-//   }
-// 
-//   // Converts 511 api data to view model object passed to handlebar templates.
-//   function getViewModel(data) {
-//     var r = {predictions:[]};
-// 
-//     const predictedArrivalTimes = [];
-//     for (let i = 0; i < data.length; i++) {
-//       predictedArrivalTimes.push(
-//         this.getPredictedTimes(
-//           data[i],
-//           this.config.stops[i].line,
-//           this.config.stops[i].direction,
-//           this.config.stops[i].stop));
-//     }
-// 
-//     for (let i = 0; i < predictedArrivalTimes.length; i++) {
-//       const routeName = this.config.stops[i].line;
-//       const icon = this.getIcon(routeName);
-//       const m = {
-//         iconUrl: icon.url,
-//         iconText: icon.text,
-//         times: []
-//       };
-// 
-//       const now = new Date();
-//       const times = predictedArrivalTimes[i];
-//       for (const t of times) {
-//         m.times.push({
-//           minutes: this.getMinutesToArrival(now, t),
-//           timestamp: t.getTime()
-//         });
-//       }
-//       // Show times in ascending order.
-//       m.times.sort(function(a, b) {
-//         return parseInt(a.minutes, 10) - parseInt(b.minutes, 10);
-//       });
-//       // Only show three most recent times to keep rows uniform and because
-//       // predictions for more distant times are typically very inaccurate.
-//       m.times = m.times.slice(0, 3);
-// 
-//       r.predictions.push(m);
-//     }
-// 
-//     return r;
 //   }
 // 
 // 
