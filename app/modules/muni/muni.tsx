@@ -44,6 +44,7 @@ export type RouteConfig = {
   stopId: string;
 };
 
+// Hack to avoid JSX syntax ambiguity.
 type Nullable<T> = T | null;
 
 export default function Muni({
@@ -57,26 +58,42 @@ export default function Muni({
 }: MuniProps) {
   const [data, setData] = useState<Nullable<Response>>(null);
   const [lastUpdatedTimestamp, setLastUpdatedTimestamp] = useState(0);
+  const [, forceRender] = useState({});
 
   useEffect(() => {
     function fetchMuniData() {
       fetch(
         `/api/modules/muni/muni?key=${developerKey}&agency=${agency}&stops=${encodeURIComponent(JSON.stringify(stops))}`)
         .then((res) => res.json())
-        .then((data) => {
+        .then((json) => {
           setLastUpdatedTimestamp(Date.now());
-          setData(data);
+          setData(json);
         }).catch((e) => console.error(e));
     }
     fetchMuniData();
 
     const fetchMuniDataIntervalId =
       window.setInterval(fetchMuniData, updateInterval);
+
+    let localCountdownIntervalId = -1;
+    if (localCountdown) {
+      // In local countdown mode, force a re-render every second.  While
+      // predicted arrival times (in props) don't change in this interval, the
+      // distance between those predictions and wall time is constantly
+      // changing, so a manual re-render makes sense.
+      // Forced re-rendering accomplished by setting a noop state value to a new
+      // object within the interval.
+      localCountdownIntervalId =
+        window.setInterval(() => { forceRender({}); }, 1000);
+    }
+
     return () => {
       window.clearInterval(fetchMuniDataIntervalId);
+      window.clearInterval(localCountdownIntervalId);
     };
   }, []);
 
+  // Hide UI when data is missing or stale.
   if (!data) return <div></div>;
   if ('error' in data) {
     console.error(data.error);
@@ -101,18 +118,22 @@ type TransitStopProps = {
 };
 function TransitStop({ routeName, arrivalTimes }: TransitStopProps) {
   const { iconPath, iconText } = getIcon(routeName);
+  const now = Date.now();
+  // Hide arrival time if it occurred over a minute in the past.  The
+  // bus/train likely already departed.
+  const futureishArrivalTimes = arrivalTimes.filter((t) => (t - now) >= -60000);
   return (
     <li className="normal">
       <img src={iconPath} height="40" width="40" />
       {iconText && <span className={styles.routeName}>{iconText}</span>}
       <span className={styles.times}>
-        {arrivalTimes.map((time, i) =>
+        {futureishArrivalTimes.map((time, i) => {
           // Arrival times have no suitable UUID, so just use index for key.
-          <ArrivalTime
+          return <ArrivalTime
             predictedArrivalTimestamp={time}
             isLastTime={i == arrivalTimes.length - 1}
-            key={i}
-          />)}
+            key={i} />
+        })}
       </span>
     </li>
   )
@@ -139,32 +160,6 @@ function ArrivalTime({ predictedArrivalTimestamp, isLastTime }: ArrivalTimeProps
   )
 }
 
-
-// function start() {
-//     if (this.config.localCountdown) {
-//       setInterval(
-//         this.localUpdateArrivalTimes.bind(this), 1000);
-//     }
-//   }
-// 
-// 
-//   // Updates displayed arrival times previously retrieved from 511 based on
-//   // elapsed wall time.
-//   function localUpdateArrivalTimes() {
-//     const now = new Date();
-//     const times = document.querySelectorAll('.muni .timeNumber');
-//     for (const t of times) {
-//       const arrivalTime = new Date(parseInt(t.getAttribute('timestamp'), 10));
-//       if ((arrivalTime - now) < -60000) {
-//         // Hide arrival time if it occurred over a minute in the past.  The
-//         // bus/train likely already departed.
-//         t.parentNode.style.display = 'none';
-//       } else {
-//         t.textContent = this.getMinutesToArrival(now, arrivalTime);
-//       }
-//     }
-//   }
-
 // Maps muni route names to their associated icon URLs.
 function getIcon(iconName: string): { iconPath: string, iconText: string } {
   // Use 'J' icon for KJ joint line.  This is only correct for J line stops,
@@ -187,4 +182,3 @@ function getIcon(iconName: string): { iconPath: string, iconText: string } {
     iconText
   };
 }
-

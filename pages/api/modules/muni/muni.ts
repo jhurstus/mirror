@@ -68,7 +68,6 @@ function validateRequestParams(req: NextApiRequest): Params {
     throw new Error('missing required parameter "stops"');
   }
 
-
   let stops;
   try {
     stops = JSON.parse(req.query['stops']);
