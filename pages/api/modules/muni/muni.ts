@@ -123,7 +123,7 @@ function getStopPredictionJson(stops: Stops, xmlResponses: string[]): Success {
   }
 
   const xmlDocs = xmlResponses.map((x) => new JSDOM.JSDOM(x));
-  // Return a succcess status if at least one of the requested stops has
+  // Return a success status if at least one of the requested stops has
   // prediction data, so that at least that stop can be updated.  If none of the
   // requested stops have updated prediction data though, consider that a
   // service error.
