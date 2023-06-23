@@ -4,8 +4,14 @@
     "dictionaryDefinitions": [],
     "dictionaries": [],
     "words": [
+        "directionref",
+        "expectedarrivaltime",
+        "lineref",
+        "monitoredvehiclejourney",
         "Muni",
-        "stopcode"
+        "servicedelivery",
+        "stopcode",
+        "stoppointref"
     ],
     "ignoreWords": [],
     "import": []
