@@ -3,6 +3,12 @@
 import { useEffect, useState } from 'react';
 import styles from './memo.module.css'
 import { Response } from '@/pages/api/modules/memo/memo'
+import { Amatic_SC } from 'next/font/google';
+
+const amaticSc = Amatic_SC({
+  subsets: ['latin'],
+  weight: ['700'],
+});
 
 // Hack to avoid JSX syntax ambiguity.
 type Nullable<T> = T | null;
@@ -42,5 +48,5 @@ export default function Memo({
     console.error(memoData.error);
     return <></>;
   }
-  return <pre className={styles.memo}>{memoData.memo}</pre>;
+  return <pre className={styles.memo + " " + amaticSc.className}>{memoData.memo}</pre>;
 }

@@ -1,7 +1,9 @@
 .memo {
-  font-family: "Amatic SC", cursive;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 50px;
   line-height: 1.5em;
-  color: #fff;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
 }
