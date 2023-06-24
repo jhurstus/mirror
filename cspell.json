@@ -6,12 +6,15 @@
     "words": [
         "directionref",
         "expectedarrivaltime",
+        "geofence",
+        "geofences",
         "lineref",
         "monitoredvehiclejourney",
         "Muni",
         "servicedelivery",
         "stopcode",
-        "stoppointref"
+        "stoppointref",
+        "weasley"
     ],
     "ignoreWords": [],
     "import": []
