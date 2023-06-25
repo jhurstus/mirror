@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import styles from './muni.module.css'
 import { Response } from '@/pages/api/modules/muni/muni';
@@ -91,7 +92,7 @@ export default function Muni({
       window.clearInterval(fetchMuniDataIntervalId);
       window.clearInterval(localCountdownIntervalId);
     };
-  }, []);
+  }, [agency, developerKey, localCountdown, stops, updateInterval]);
 
   // Hide UI when data is missing or stale.
   if (!data) return <></>;
@@ -124,7 +125,7 @@ function TransitStop({ routeName, arrivalTimes }: TransitStopProps) {
   const futureishArrivalTimes = arrivalTimes.filter((t) => (t - now) >= -60000);
   return (
     <li className="normal">
-      <img src={iconPath} height="40" width="40" />
+      <Image src={iconPath} height="40" width="40" alt="" />
       {iconText && <span className={styles.routeName}>{iconText}</span>}
       <span className={styles.times}>
         {futureishArrivalTimes.map((time, i) => {

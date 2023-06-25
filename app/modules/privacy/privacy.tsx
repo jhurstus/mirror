@@ -46,7 +46,7 @@ export function PrivacyProvider({
     return () => {
       auth.signOut();
     };
-  }, []);
+  }, [email, firebaseConfig, password]);
 
 
   return (

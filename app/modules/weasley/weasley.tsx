@@ -45,11 +45,10 @@ export default function Weasley({
   const [fences, setGeofences] = useState<Geofence[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
 
-  const users = new Map<string, string>(usersArr);
-
   useEffect(() => {
     const app = initializeApp(firebaseConfig);
     const auth = getAuth();
+    const users = new Map<string, string>(usersArr);
 
     signInWithEmailAndPassword(auth, email, password).then((userCredential) => {
       const database = getDatabase(app);
@@ -86,7 +85,7 @@ export default function Weasley({
     return () => {
       auth.signOut();
     };
-  }, []);
+  }, [email, firebaseConfig, password, usersArr]);
 
   if (isInPrivacyMode) return <></>;
 

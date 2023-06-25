@@ -42,7 +42,7 @@ export default function Memo({
     const fetchMemoIntervalId = window.setInterval(fetchMemo, updateInterval);
 
     return () => window.clearInterval(fetchMemoIntervalId);
-  }, []);
+  }, [url, updateInterval]);
 
   if (isInPrivacyMode) return <></>;
   if (!memoData) return <></>;
