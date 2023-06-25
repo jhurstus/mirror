@@ -1,13 +1,3 @@
-.private .hcalendar {
-  display: none;
-}
-.private .memo {
-  display: none;
-}
-.private .weasley {
-  display: none;
-}
-
 .weasley {
   font-size: 2.4rem;
   margin-top: 100px;

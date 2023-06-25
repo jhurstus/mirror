@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import styles from './memo.module.css'
 import { Response } from '@/pages/api/modules/memo/memo'
 import { Amatic_SC } from 'next/font/google';
+import { IsInPrivacyModeContext } from '../privacy/privacy';
 
 const amaticSc = Amatic_SC({
   subsets: ['latin'],
@@ -24,6 +25,8 @@ export default function Memo({
   url,
   updateInterval = 10 * 1000
 }: MemoProps) {
+  const isInPrivacyMode = useContext(IsInPrivacyModeContext);
+
   const [memoData, setMemoData] = useState<Nullable<Response>>(null);
 
   useEffect(() => {
@@ -43,6 +46,7 @@ export default function Memo({
 
   // 'https://fonts.googleapis.com/css?family=Amatic+SC:400,700&subset=latin-ext&.css',
 
+  if (isInPrivacyMode) return <></>;
   if (!memoData) return <></>;
   if ('error' in memoData) {
     console.error(memoData.error);

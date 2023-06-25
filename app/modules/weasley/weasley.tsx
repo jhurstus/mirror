@@ -3,9 +3,10 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { getDatabase, onValue, ref } from 'firebase/database';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Geofence, Location, getAggregatedLocationDescriptions, isFirebaseDbGeofencesVal, isFirebaseDbUsersVal } from './geo_utils';
 import styles from './weasley.module.css';
+import { IsInPrivacyModeContext } from '../privacy/privacy';
 
 // See: https://firebase.google.com/docs/web/learn-more#config-object
 export type FirebaseConfig = {
@@ -37,8 +38,10 @@ export default function Weasley({
   usersArr,
   homeCountry,
   homeState,
-  homeCity
+  homeCity,
 }: WeasleyProps) {
+  const isInPrivacyMode = useContext(IsInPrivacyModeContext);
+
   const [fences, setGeofences] = useState<Geofence[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
 
@@ -85,6 +88,8 @@ export default function Weasley({
     };
   }, []);
 
+  if (isInPrivacyMode) return <></>;
+
   if (fences.length == 0 || locations.length == 0) {
     return <></>;
   }
@@ -97,13 +102,3 @@ export default function Weasley({
     </ul>
   );
 }
-
-//   bindDb: function() {
-//     this.db.ref('mirror/config/showPrivateInfo').on('value', function(snapshot) {
-//       that.showPrivateInfo(snapshot.val());
-//     });
-//   },
-// 
-//   showPrivateInfo: function(show) {
-//     document.body.classList[show ? 'remove' : 'add']('private');
-//   },
