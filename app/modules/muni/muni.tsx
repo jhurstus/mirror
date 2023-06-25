@@ -94,13 +94,13 @@ export default function Muni({
   }, []);
 
   // Hide UI when data is missing or stale.
-  if (!data) return <div></div>;
+  if (!data) return <></>;
   if ('error' in data) {
     console.error(data.error);
-    return <div></div>;
+    return <></>;
   }
   if ((Date.now() - lastUpdatedTimestamp) > dataAgeLimit) {
-    return <div></div>;
+    return <></>;
   }
 
   return (
