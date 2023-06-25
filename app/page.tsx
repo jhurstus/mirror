@@ -16,7 +16,7 @@ export default function Home() {
         firebaseConfig={JSON.parse(process.env.NEXT_PUBLIC_WEASLEY_FIREBASE!)}
         email={process.env.NEXT_PUBLIC_WEASLEY_EMAIL!}
         password={process.env.NEXT_PUBLIC_WEASLEY_PASSWORD!}
-        users={JSON.parse(process.env.NEXT_PUBLIC_WEASLEY_USERS!)}
+        usersArr={JSON.parse(process.env.NEXT_PUBLIC_WEASLEY_USERS!)}
         homeCountry='United States'
         homeState='California'
         homeCity='San Francisco' />
