@@ -44,8 +44,6 @@ export default function Memo({
     return () => window.clearInterval(fetchMemoIntervalId);
   }, []);
 
-  // 'https://fonts.googleapis.com/css?family=Amatic+SC:400,700&subset=latin-ext&.css',
-
   if (isInPrivacyMode) return <></>;
   if (!memoData) return <></>;
   if ('error' in memoData) {
