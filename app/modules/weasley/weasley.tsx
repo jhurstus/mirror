@@ -5,6 +5,7 @@ import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { getDatabase, onValue, ref } from 'firebase/database';
 import { useEffect, useState } from 'react';
 import { Geofence, Location, getAggregatedLocationDescriptions, isFirebaseDbGeofencesVal, isFirebaseDbUsersVal } from './geo_utils';
+import styles from './weasley.module.css';
 
 // See: https://firebase.google.com/docs/web/learn-more#config-object
 export type FirebaseConfig = {
@@ -91,7 +92,7 @@ export default function Weasley({
   const locationDescriptions = getAggregatedLocationDescriptions(
     locations, fences, homeCity, homeState, homeCountry);
   return (
-    <ul>
+    <ul className={styles.weasley}>
       {locationDescriptions.map((desc) => <li key={desc}>{desc}</li>)}
     </ul>
   );
