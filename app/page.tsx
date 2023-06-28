@@ -5,6 +5,7 @@ import Memo from './modules/memo/memo'
 import Muni from './modules/muni/muni'
 import { PrivacyProvider } from './modules/privacy/privacy'
 import Weasley from './modules/weasley/weasley'
+import Weather from './modules/weather/weather';
 
 export default function Home() {
   return (
@@ -29,6 +30,15 @@ export default function Home() {
           homeState='California'
           homeCity='San
            Francisco' />
+        <Weather
+          visualCrossingApiKey={process.env.NEXT_PUBLIC_WEATHER_VISUAL_CROSSING_API_KEY!}
+          address={process.env.NEXT_PUBLIC_WEATHER_ADDRESS!}
+          ambientWeatherApiKey={process.env.NEXT_PUBLIC_WEATHER_AMBIENT_WEATHER_API_KEY!}
+          ambientWeatherApplicationKey={process.env.NEXT_PUBLIC_WEATHER_AMBIENT_WEATHER_APPLICATION_KEY!}
+          ambientWeatherDeviceMAC={process.env.NEXT_PUBLIC_WEATHER_AMBIENT_WEATHER_DEVICE_MAC!}
+          purpleAirReadKey={process.env.NEXT_PUBLIC_WEATHER_PURPLE_AIR_READ_KEY!}
+          purpleAirNorthwestLatLng={JSON.parse(process.env.NEXT_PUBLIC_WEATHER_PURPLE_AIR_NORTHWEST_LATLNG!)}
+          purpleAirSoutheastLatLng={JSON.parse(process.env.NEXT_PUBLIC_WEATHER_PURPLE_AIR_SOUTHEAST_LATLNG!)} />
         <Memo
           url={process.env.NEXT_PUBLIC_MEMO_URL!} />
 
