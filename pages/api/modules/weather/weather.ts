@@ -1,7 +1,8 @@
 import AmbientWeatherApi from 'ambient-weather-api'
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { PurpleAirResponse, VisualCrossing } from './response_schemas';
+import { Weather } from './response_schemas';
 import getVisualCrossingWeatherData from './visual_crossing';
+import { getPurpleAirWeatherData } from './purple_air';
 
 export type LatLng = [number, number];
 
@@ -22,9 +23,8 @@ export type Error = {
   error: string;
 };
 export type Success = {
-  visualCrossing: VisualCrossing;
+  weather: Weather
   ambientWeather?: AmbientWeatherApi.DeviceData[];
-  purpleAir?: PurpleAirResponse;
 };
 export type Response = Error | Success;
 
@@ -54,7 +54,8 @@ export default async function handler(
       purpleAirPromise = getPurpleAirWeatherData(
         params.purpleAirReadKey,
         params.purpleAirNorthwestLatLng,
-        params.purpleAirSoutheastLatLng);
+        params.purpleAirSoutheastLatLng,
+        NETWORK_TIMEOUT);
     }
 
     const [visualCrossing, ambientWeather, purpleAir] =
@@ -66,7 +67,7 @@ export default async function handler(
       throw visualCrossing.reason;
     }
     const resp: Response = {
-      visualCrossing: visualCrossing.value,
+      weather: visualCrossing.value,
     };
 
     if (ambientWeather.status == 'fulfilled' &&
@@ -75,10 +76,8 @@ export default async function handler(
       resp.ambientWeather = ambientWeather.value;
     }
 
-    if (purpleAir.status == 'fulfilled' &&
-      purpleAir.value &&
-      purpleAir.value.data.length) {
-      resp.purpleAir = purpleAir.value;
+    if (purpleAir.status == 'fulfilled' && purpleAir.value) {
+      resp.weather.aqi = purpleAir.value;
     }
 
     res.status(200).json(resp);
@@ -139,37 +138,6 @@ async function getAmbientWeatherData(
     applicationKey: ambientWeatherApplicationKey
   });
   return api.deviceData(ambientWeatherDeviceMAC, { limit: 1 });
-}
-
-// Retrieves purple air sensor data within the given bounding box.
-async function getPurpleAirWeatherData(
-  purpleAirReadKey: string,
-  northwest: LatLng,
-  southeast: LatLng
-): Promise<PurpleAirResponse> {
-  const url = 'https://api.purpleair.com/v1/sensors?' +
-    'fields=name,location_type,latitude,longitude,last_seen,last_modified,' +
-    'humidity,humidity_a,humidity_b,pm2.5_10minute' +
-    '&location_type=0&max_age=600' +
-    '&nwlng=' + northwest[1] + '&nwlat=' + northwest[0] +
-    '&selng=' + southeast[1] + '&selat=' + southeast[0];
-
-  const abortController = new AbortController();
-  const timeoutId = setTimeout(() => {
-    abortController.abort();
-  }, NETWORK_TIMEOUT);
-
-  let fetchResponseJson: PurpleAirResponse;
-  try {
-    const resp = await fetch(url, {
-      headers: { 'X-API-Key': purpleAirReadKey },
-      signal: abortController.signal,
-    });
-    fetchResponseJson = await resp.json();
-  } finally {
-    clearTimeout(timeoutId);
-  }
-  return fetchResponseJson;
 }
 
 function queryParamToLatLng(

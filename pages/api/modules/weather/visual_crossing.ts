@@ -1,11 +1,11 @@
-import { VisualCrossing, VisualCrossingResponse, VisualCrossingShortForecast } from "./response_schemas";
+import { Weather, VisualCrossingResponse, VisualCrossingShortForecast } from "./response_schemas";
 
 // Retrieves weather data from Visual Crossing.  Throws if data is missing or
 // invalid.
 export default async function getVisualCrossingWeatherData(
   address: string,
   visualCrossingApiKey: string,
-  timeout: number): Promise<VisualCrossing> {
+  timeout: number): Promise<Weather> {
   const visualCrossingUrl =
     'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/' +
     `${encodeURIComponent(address)}?key=${visualCrossingApiKey}&unitGroup=us`;
@@ -56,7 +56,7 @@ function isForecastDataValid(data: VisualCrossingResponse): boolean {
 }
 
 // Converts Visual Crossing service response to data needed for display.
-function visualCrossingResponseToWeatherData(data: VisualCrossingResponse): VisualCrossing {
+function visualCrossingResponseToWeatherData(data: VisualCrossingResponse): Weather {
   // current conditions
   const temperature = Math.round(data.currentConditions.feelslike);
   const today = data.days[0];

@@ -26,6 +26,19 @@ export interface PurpleAirResponse {
   ][]
 }
 
+export type AirQualityLabel =
+  'hazardous' |
+  'very-unhealthy' |
+  'unhealthy' |
+  'unhealthy-for-sensitive-groups' |
+  'moderate' |
+  'good';
+
+export interface AirQuality {
+  aqi: number,
+  label: AirQualityLabel,
+} 
+
 // See https://www.visualcrossing.com/resources/documentation/weather-api/timeline-weather-api/
 // ... for further documentation.
 export interface VisualCrossingResponse {
@@ -38,7 +51,7 @@ export interface VisualCrossingResponse {
   tzoffset: number
   description: string
   days: Day[]
-  alerts: {event: string}[]
+  alerts: { event: string }[]
   stations: { [key: string]: Stations }
   currentConditions: CurrentConditions
 }
@@ -154,7 +167,7 @@ export interface CurrentConditions {
   moonphase: number
 }
 
-export interface VisualCrossing {
+export interface Weather {
   temperature: number,
   summary: string,
   windSpeed: number,
@@ -167,6 +180,7 @@ export interface VisualCrossing {
   sunset: string,
   shortForecast: VisualCrossingShortForecast[],
   alerts: string[],
+  aqi?: AirQuality,
 }
 
 export interface VisualCrossingShortForecast {
