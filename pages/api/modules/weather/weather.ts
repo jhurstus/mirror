@@ -134,7 +134,7 @@ function queryParamToLatLng(
   if (typeof queryParam != 'string') {
     return undefined;
   }
-  const latLng = queryParam.split(',').map((s) => parseFloat(s));
+  const latLng = JSON.parse(queryParam);
   if (latLng.length != 2) {
     return undefined;
   }
