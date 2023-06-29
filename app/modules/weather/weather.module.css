@@ -1,9 +1,14 @@
 .summary {
   max-width: 325px;
   text-align: center;
+  font-size: 2rem;
+  line-height: 2.5rem;
 }
 
 .layout {
+  position: absolute;
+  top: 5px;
+  right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -26,7 +31,7 @@
   height: 118px;
   border-radius: 71px;
   border: 6px solid #000;
-  font-size: 65px;
+  font-size: 6.5rem;
   color: #000;
   line-height: 118px;
   text-align: center;
@@ -35,7 +40,8 @@
 }
 .lowHigh {
   color: #fff;
-  line-height: 30px;
+  font-size: 3.2rem;
+  line-height: 3rem;
   text-transform: uppercase;
 }
 
@@ -43,6 +49,8 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  font-size: 2rem;
+  line-height: 2.5rem;
 }
 .conditionDetails > div {
   color: #fff;
@@ -65,6 +73,8 @@
 .suntimeContainer {
   padding-left: 14px;
   color: #fff;
+  font-size: 2rem;
+  line-height: 2.5rem;
 }
 .suntime {
   position: relative;
@@ -73,19 +83,19 @@
   position: absolute;
   height: 50px;
   width: 50px;
-  top: -13px;
+  top: -14px;
   left: -45px;
 }
 .aqiContainer {
-  padding-left: 22px;
+  padding-left: 28px;
 }
 .aqi {
   border: 1px solid white;
   border-radius: 4px;
   font-size: 13px;
-  font-weight: bold;
+  font-weight: 700;
   left: -2px;
-  padding: 0 5px;
+  padding: 1px 5px;
   position: relative;
   top: -2px;
 }
@@ -126,6 +136,8 @@
   width: 290px;
   top: -15px;
   color: #fff;
+  font-size: 2rem;
+  line-height: 2.5rem;
 }
 .shortForecast img {
   -webkit-filter: invert(1);
@@ -140,95 +152,14 @@
   width: 315px;
   position: relative;
   left: -23px;
+  font-size: 2rem;
+  line-height: 2.5rem;
+}
+.alerts ul {
+  margin: 0;
 }
 .alerts li {
   list-style-type: none;
   color: #f88;
   margin-bottom: 1em;
-}
-
-.chartContainer {
-  position: relative;
-  width: 270px;
-  height: 150px;
-  left: -20px;
-}
-.chartContainer .tempIcon {
-  position: absolute;
-  top: -12px;
-  right: -45px;
-  width: 50px;
-  height: 50px;
-}
-.chartContainer .windIcon {
-  position: absolute;
-  top: 15px;
-  right: -45px;
-  width: 50px;
-  height: 50px;
-}
-.chartContainer .precipIcon {
-  position: absolute;
-  top: 44px;
-  right: -45px;
-  width: 50px;
-  height: 50px;
-}
-#chart {
-  width: 270px;
-  height: 150px;
-}
-
-.forecastSummary {
-  width: 315px;
-}
-.forecastSummaryTitle {
-  text-transform: uppercase;
-  text-align: left;
-  font-weight: bold;
-  color: #fff;
-}
-.forecastSummaryText {
-  font-size: 20px;
-  text-align: left;
-  line-height: 1.5em;
-}
-
-.weekly {
-  width: 315px;
-}
-.weekly td {
-  font-size: 0.5em;
-  padding: 0;
-  line-height: 28px;
-}
-.weekly .day {
-  width: 30px;
-}
-.weekly .wIcon {
-  text-align: left;
-  width: 30px;
-  position: relative;
-}
-.weekly .wIcon img {
-  -webkit-filter: invert(1);
-  filter: invert(1);
-  width: 35px;
-  height: 35px;
-  position: absolute;
-  top: -3px;
-  left: -4px;
-}
-.weekly .range {
-  text-align: left;
-}
-.temperatureBar {
-  background-color: white;
-  height: 13px;
-  display: inline-block;
-  border-radius: 6px;
-}
-
-.sectionSep {
-  margin-top: 40px;
 }

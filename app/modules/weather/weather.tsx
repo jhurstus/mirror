@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import styles from './weather.module.css'
 import { Weather } from "@/pages/api/modules/weather/response_schemas";
 import { LatLng } from "@/pages/api/modules/weather/weather";
 import { useEffect, useState } from "react";
@@ -98,69 +99,68 @@ export default function Weather({
   }
 
   return (
-    <div className="layout">
-      <div className="summary bright small">{weather.summary}</div>
+    <div className={styles.layout}>
+      <div className={styles.summary}>{weather.summary}</div>
 
-      <div className="currentTemperatures">
-        <div className="lowHigh">
+      <div className={styles.currentTemperatures}>
+        <div className={styles.lowHigh}>
           {String.fromCharCode(160) + weather.low}°
           <div>low</div>
         </div>
-        <div className="temperatureCircle">{weather.temperature}</div>
-        <div className="lowHigh">
+        <div className={styles.temperatureCircle}>{weather.temperature}</div>
+        <div className={styles.lowHigh}>
           {String.fromCharCode(160) + weather.high}°
           <div>high</div>
         </div>
       </div>
 
-      <div className="conditionDetails normal small">
+      <div className={styles.conditionDetails}>
         <div>
-          <span className="icon"><Image src="modules/weather/icons/Wind.svg" width="50" height="50" alt="wind" /></span>
+          <span className={styles.icon}><Image src="modules/weather/icons/Wind.svg" width="50" height="50" alt="wind" /></span>
           {weather.windSpeed} mph
         </div>
         <div>
-          <span className="icon"><Image src="/modules/weather/icons/Umbrella.svg" width="50" height="50" alt="rain" /></span>
+          <span className={styles.icon}><Image src="/modules/weather/icons/Umbrella.svg" width="50" height="50" alt="rain" /></span>
           {weather.precipProbability}%
         </div>
         <div>
-          <span className="icon"><Image src="/modules/weather/icons/Cloud.svg" width="50" height="50" alt="cloud cover" /></span>
+          <span className={styles.icon}><Image src="/modules/weather/icons/Cloud.svg" width="50" height="50" alt="cloud cover" /></span>
           {weather.cloudCover}%
         </div>
         <div>
-          <span className="icon"><Image src="/modules/weather/icons/Sun.svg" width="50" height="50" alt="uv index" /></span>
+          <span className={styles.icon}><Image src="/modules/weather/icons/Sun.svg" width="50" height="50" alt="uv index" /></span>
           {weather.uvIndex}
         </div>
       </div>
 
-      <div className="suntimeContainer normal small">
-        <span className="suntime"><Image src="/modules/weather/icons/Sunrise.svg" width="50" height="50" alt="sunrise and sunset time" /></span>
+      <div className={styles.suntimeContainer}>
+        <span className={styles.suntime}><Image src="/modules/weather/icons/Sunrise.svg" width="50" height="50" alt="sunrise and sunset time" /></span>
         {weather.sunrise} • {weather.sunset}
 
         {weather.aqi &&
-          <span className={'aqiContainer aqi' + weather.aqi.label}><span className="aqi">AQI</span> {weather.aqi.aqi}</span>
+          <span className={styles.aqiContainer + ' ' + styles['aqi' + weather.aqi.label]}><span className={styles.aqi}>AQI</span> {weather.aqi.aqi}</span>
         }
       </div>
 
-      <div className="shortForecast normal small">
+      <div className={styles.shortForecast}>
         {weather.shortForecast.map((forecast, index) => {
           return <span key={index} style={{ float: index == 0 ? 'left' : 'right' }}>
-            {forecast.day}
+            {String.fromCharCode(160) + forecast.day + String.fromCharCode(160)}
             <Image src={getIconUrl(forecast.icon)} width="35" height="35" alt="" />
-            {forecast.low}° {forecast.high}°
+            {String.fromCharCode(160) + forecast.low}° {forecast.high}°
           </span>
         })}
       </div>
 
-
-      {weather.alerts.length &&
-        <div className="alerts small">
+      {weather.alerts.length > 0 ?
+        <div className={styles.alerts}>
           <ul>
             {weather.alerts.map((alert, index) => {
               return <li key={index}>{alert}</li>
             })}
           </ul>
         </div>
-      }
+        : <></>}
 
     </div>
   );
