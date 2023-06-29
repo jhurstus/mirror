@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Weather } from "@/pages/api/modules/weather/response_schemas";
 import { LatLng } from "@/pages/api/modules/weather/weather";
 import { useEffect, useState } from "react";
@@ -58,9 +59,9 @@ export default function Weather({
       url.searchParams.append('visualCrossingApiKey', visualCrossingApiKey);
       url.searchParams.append('address', address);
       if (ambientWeatherApiKey && ambientWeatherApplicationKey && ambientWeatherDeviceMAC) {
-      url.searchParams.append('ambientWeatherApiKey', ambientWeatherApiKey);
-      url.searchParams.append('ambientWeatherApplicationKey', ambientWeatherApplicationKey);
-      url.searchParams.append('ambientWeatherDeviceMAC', ambientWeatherDeviceMAC);
+        url.searchParams.append('ambientWeatherApiKey', ambientWeatherApiKey);
+        url.searchParams.append('ambientWeatherApplicationKey', ambientWeatherApplicationKey);
+        url.searchParams.append('ambientWeatherDeviceMAC', ambientWeatherDeviceMAC);
       }
       if (purpleAirReadKey && purpleAirNorthwestLatLng && purpleAirSoutheastLatLng) {
         url.searchParams.append('purpleAirReadKey', purpleAirReadKey);
@@ -96,129 +97,89 @@ export default function Weather({
     return <></>;
   }
 
-  return <div>{JSON.stringify(weather)}</div>
+  return (
+    <div className="layout">
+      <div className="summary bright small">{weather.summary}</div>
+
+      <div className="currentTemperatures">
+        <div className="lowHigh">
+          {String.fromCharCode(160) + weather.low}°
+          <div>low</div>
+        </div>
+        <div className="temperatureCircle">{weather.temperature}</div>
+        <div className="lowHigh">
+          {String.fromCharCode(160) + weather.high}°
+          <div>high</div>
+        </div>
+      </div>
+
+      <div className="conditionDetails normal small">
+        <div>
+          <span className="icon"><Image src="modules/weather/icons/Wind.svg" width="50" height="50" alt="wind" /></span>
+          {weather.windSpeed} mph
+        </div>
+        <div>
+          <span className="icon"><Image src="/modules/weather/icons/Umbrella.svg" width="50" height="50" alt="rain" /></span>
+          {weather.precipProbability}%
+        </div>
+        <div>
+          <span className="icon"><Image src="/modules/weather/icons/Cloud.svg" width="50" height="50" alt="cloud cover" /></span>
+          {weather.cloudCover}%
+        </div>
+        <div>
+          <span className="icon"><Image src="/modules/weather/icons/Sun.svg" width="50" height="50" alt="uv index" /></span>
+          {weather.uvIndex}
+        </div>
+      </div>
+
+      <div className="suntimeContainer normal small">
+        <span className="suntime"><Image src="/modules/weather/icons/Sunrise.svg" width="50" height="50" alt="sunrise and sunset time" /></span>
+        {weather.sunrise} • {weather.sunset}
+
+        {weather.aqi &&
+          <span className={'aqiContainer aqi' + weather.aqi.label}><span className="aqi">AQI</span> {weather.aqi.aqi}</span>
+        }
+      </div>
+
+      <div className="shortForecast normal small">
+        {weather.shortForecast.map((forecast, index) => {
+          return <span key={index} style={{ float: index == 0 ? 'left' : 'right' }}>
+            {forecast.day}
+            <Image src={getIconUrl(forecast.icon)} width="35" height="35" alt="" />
+            {forecast.low}° {forecast.high}°
+          </span>
+        })}
+      </div>
+
+
+      {weather.alerts.length &&
+        <div className="alerts small">
+          <ul>
+            {weather.alerts.map((alert, index) => {
+              return <li key={index}>{alert}</li>
+            })}
+          </ul>
+        </div>
+      }
+
+    </div>
+  );
 }
 
-//   // Maps Visual Crossing 'icon' enum values to actual icon filenames.
-//   getIconUrl: function(iconName) {
-//     var iconMap = {
-//       'clear-day': 'Sun.svg',
-//       'clear-night': 'Moon-Full.svg',
-//       'rain': 'Cloud-Rain.svg',
-//       'snow': 'Cloud-Snow.svg',
-//       'sleet': 'Cloud-Hail.svg',
-//       'wind': 'Cloud-Wind-Sun.svg',
-//       'fog': 'Cloud-Fog-Alt.svg',
-//       'cloudy': 'Cloud.svg',
-//       'partly-cloudy-day': 'Cloud-Sun.svg',
-//       'partly-cloudy-night': 'Cloud-Moon.svg'
-//     };
-//     var iconFile = iconMap[iconName] || 'Sun.svg';
-//     return 'modules/hurst/ambientweather/public/icons/' + iconFile;
-//   },
-// 
-// });
-// 
-
-// 
-// <div class="layout">
-//   <div class="summary bright small">{{summary}}</div>
-// 
-//   {{!-- current temperatures --}}
-//   <div class="currentTemperatures">
-//     <div class="lowHigh">
-//       &nbsp;{{low}}°
-//       <div>low</div>
-//     </div>
-//     <div class="temperatureCircle">{{temperature}}</div>
-//     <div class="lowHigh">
-//       &nbsp;{{high}}°
-//       <div>high</div>
-//     </div>
-//   </div>
-// 
-// 
-//   {{!-- current condition details --}}
-//   <div class="conditionDetails normal small">
-//     <div>
-//       <span class="icon"><img src="modules/hurst/ambientweather/public/icons/Wind.svg"></span>
-//       {{windSpeed}} mph
-//     </div>
-//     <div>
-//       <span class="icon"><img src="modules/hurst/ambientweather/public/icons/Umbrella.svg"></span>
-//       {{precipProbability}}%
-//     </div>
-//     <div>
-//       <span class="icon"><img src="modules/hurst/ambientweather/public/icons/Cloud.svg"></span>
-//       {{cloudCover}}%
-//     </div>
-//     <div>
-//       <span class="icon"><img src="modules/hurst/ambientweather/public/icons/Sun.svg"></span>
-//       {{uvIndex}}
-//     </div>
-//   </div>
-// 
-//   {{!-- sunrise/sunset times, AQI --}}
-//   {{#if aqi includeZero=true}}
-//   <div class="suntimeContainer normal small">
-//     <span class="suntime"><img src="modules/hurst/ambientweather/public/icons/Sunrise.svg"></span>
-//     {{sunrise}} • {{sunset}}
-// 
-//     <span class="aqiContainer aqi{{aqiLabel}}"><span class="aqi">AQI</span> {{aqi}}</span>
-//   </div>
-//   {{/if}}
-// 
-//   {{!-- short forecast --}}
-//   <div class="shortForecast normal small">
-//   {{#each shortForecast}}
-//   <span style="float:{{#if @first}}left{{else}}right{{/if}}">
-//     {{day}}
-//     <img src="{{iconUrl}}" width="35" height="35">
-//     {{low}}° {{high}}°
-//   </span>
-//   {{/each}}
-//   </div>
-// 
-// 
-//   {{!-- weather alerts --}}
-//   {{#if alerts}}
-//   <div class="alerts small">
-//     <ul>
-//       {{#each alerts}}
-//         <li>{{title}}</li>
-//       {{/each}}
-//     </ul>
-//   </div>
-//   {{/if}}
-// 
-//   {{!-- precipitation, temperature, and wind chart --}}
-//   {{#if chart}}
-//   <div class="chartContainer sectionSep">
-//     <img src="modules/hurst/ambientweather/public/icons/tempIcon.svg" class="tempIcon">
-//     <img src="modules/hurst/ambientweather/public/icons/windIcon.svg" class="windIcon">
-//     <img src="modules/hurst/ambientweather/public/icons/precipIcon.svg" class="precipIcon">
-//     <div id="chart">
-//     </div>
-//   </div>
-//   {{/if}}
-// 
-//   {{!-- weekly forecast --}}
-//   {{#if dailyForecasts}}
-//   <div class="weekly sectionSep">
-//     <table>
-//     {{#each dailyForecasts}}
-//       <tr style="opacity: {{opacity}}">
-//         <td class="day">{{day}}</td>
-//         <td class="wIcon"><img src="{{iconUrl}}"></td>
-//         <td class="range" style="padding-left:{{barOffset}}px">
-//           {{low}}°
-//           <div class="temperatureBar" style="width:{{barWidth}}px"></div>
-//           {{high}}°
-//         </td>
-//       </tr>
-//     {{/each}}
-//     </table>
-//   </div>
-//   {{/if}}
-// 
-// </div>
+// Maps Visual Crossing 'icon' enum values to weather icon relative URLs.
+function getIconUrl(iconName: string): string {
+  const iconMap = {
+    'clear-day': 'Sun.svg',
+    'clear-night': 'Moon-Full.svg',
+    'rain': 'Cloud-Rain.svg',
+    'snow': 'Cloud-Snow.svg',
+    'sleet': 'Cloud-Hail.svg',
+    'wind': 'Cloud-Wind-Sun.svg',
+    'fog': 'Cloud-Fog-Alt.svg',
+    'cloudy': 'Cloud.svg',
+    'partly-cloudy-day': 'Cloud-Sun.svg',
+    'partly-cloudy-night': 'Cloud-Moon.svg'
+  } as { [key: string]: string };
+  const iconFile = iconMap[iconName] || 'Sun.svg';
+  return '/modules/weather/icons/' + iconFile
+}
