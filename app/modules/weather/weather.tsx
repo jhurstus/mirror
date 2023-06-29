@@ -55,107 +55,18 @@ export default function Weather({
 //   },
 // 
 //   socketNotificationReceived: function(notification, payload) {
-//     if (notification == 'download') {
-//       try {
-//         var data = JSON.parse(payload.visualCrossing);
-//         if (this.isForecastDataValid(data)) {
-//           // Splice realtime ambient weather data into Visual Crossing response
-//           // if available.  This is done because:
-//           // - Ambient Weather relies on a local sensor, which is presumably
-//           //   more likely to fail than Visual Crossing.
-//           // - Visual Crossing provides reasonably accurate realtime data.
-//           //   Timeliness is more important than a small improvement in weather
-//           //   data accuracy.
-//           // - Can use just Visual Crossing API docs to author module (vs. a
-//           //   custom synthesized data format).
-//           if (this.isAmbientWeatherDataValid(payload.ambientWeather)) {
-//             this.mergeVisualCrossingAmbientWeather(
-//               data, payload.ambientWeather);
-//           }
-// 
 //           this.forecastData = data;
 //           this.lastUpdateTimestamp = Date.now();
 //           this.updateDom(this.config.animationDuration);
-//         } else {
-//           Log.error('Invalid forecast data.');
-//         }
-//       } catch (err) {
-//         Log.error(err.toString());
-//       }
-//     } else if (notification && notification.startsWith('error')) {
-//       this.updateDom(this.config.animationDuration);
-//     }
 //   },
 // 
 //   getDom: function() {
-//     Log.info('updating weather dom');
-// 
 //     if (!this.forecastData ||
 //         (Date.now() - this.lastUpdateTimestamp) > this.config.dataAgeLimit) {
 //       return document.createElement('div');
 //     }
 // 
-//     this.dom = document.createElement('div');
-//     this.viewModel = this.getViewModel(this.forecastData, this.purpleAirData);
 //     this.dom.innerHTML = this.mainTemplate(this.viewModel);
-// 
-//     return this.dom;
-//   },
-// 
-//   getViewModel: function(data, purpleAirData) {
-//     // If an actual high temperature from earlier in the same day exceeds the
-//     // current forecasted high, show the historical high instead.  After it has
-//     // passed, this causes the correct daily historical high to be shown, rather
-//     // than the forecasted high.
-//     // TODO: similarly correct for lows, bearing in mind lows are 'overnight'
-//     // lows, so typically span 2 days.
-//     var today = new Date();
-//     var dateLabel =
-//         today.getFullYear() + '-' +
-//         (today.getMonth() + 1) + '-' +
-//         today.getDate();
-//     if (typeof this.dailyHighs[dateLabel] == 'number' &&
-//         this.dailyHighs[dateLabel] > r.high) {
-//       r.high = this.dailyHighs[dateLabel];
-//     }
-//     this.dailyHighs[dateLabel] = r.high;
-// 
-//     return r;
-//   },
-// 
-//   // Validates Ambient Weather data has expected fields in the expected format.
-//   // See https://github.com/ambient-weather/api-docs/wiki/Device-Data-Specs
-//   isAmbientWeatherDataValid: function(data) {
-//     if (!data || !data.length || data.length != 1) {
-//       return false;
-//     }
-// 
-//     var d = data[0];
-// 
-//     if (typeof d.feelsLike  != 'number' ||
-//         typeof d.windspeedmph != 'number' ||
-//         typeof d.dateutc != 'number' ||
-//         typeof d.uv != 'number') {
-//       Log.info('missing expected ambient weather fields');
-//       return false;
-//     }
-// 
-//     // Reject sensor data more than 20 minutes old; better to have more timely
-//     // Visual Crossing data.  This cutoff can be tuned as desired.
-//     if (Date.now() - d.dateutc > 20 * 60 * 1000) {
-//       Log.info('ambient weather data too old');
-//       return false;
-//     }
-// 
-//     return true;
-//   },
-// 
-//   // Merges ambient weather data into visual crossing data.
-//   mergeVisualCrossingAmbientWeather: function(ds, aw) {
-//     aw = aw[0];
-//     ds.currentConditions.feelslike = aw.feelsLike;
-//     ds.currentConditions.windspeed = aw.windspeedmph;
-//     ds.currentConditions.uvindex = aw.uv;
 //   },
 // 
 //   // Maps Visual Crossing 'icon' enum values to actual icon filenames.

@@ -74,11 +74,8 @@ export default async function handler(
       // more precise local weather station data.
       Object.assign(resp.weather, ambientWeather.value);
     }
-    // If current temperature is outside forecasted high/low range, adjust
-    // forecast to include present temperature.  This prevents immediately
-    // obviously wrong displays like: current 90, lo 40, hi 80.
-    resp.weather.low = Math.min(resp.weather.temperature, Math.round(resp.weather.low));
-    resp.weather.high = Math.max(resp.weather.temperature, Math.round(resp.weather.high));
+
+    fixInconsistentWeatherProperties(resp.weather);
 
     if (purpleAir.status == 'fulfilled' && purpleAir.value) {
       resp.weather.aqi = purpleAir.value;
@@ -142,4 +139,29 @@ function queryParamToLatLng(
     return undefined;
   }
   return latLng as LatLng;
+}
+
+// Highest observed temperature on a given day, e.g. '2023-03-04' => 80.
+// This leaks memory, but I reset the display daily anyway, so doesn't matter.
+const DAILY_HIGHS = new Map<string, number>();
+
+// Adjusts weather properties to be consistent with each other.
+function fixInconsistentWeatherProperties(weather: Weather): void {
+  // If current temperature is outside forecasted high/low range, adjust
+  // forecast to include present temperature.  This prevents immediately
+  // obviously wrong displays like: current 90, lo 40, hi 80.
+  weather.low = Math.min(weather.temperature, Math.round(weather.low));
+  weather.high = Math.max(weather.temperature, Math.round(weather.high));
+
+  // If an actual high temperature from earlier in the same day exceeds the
+  // current forecasted high, show the historical high instead.  After it has
+  // passed, this causes the correct daily historical high to be shown, rather
+  // than the forecasted high.
+  const today = new Date();
+  const dateLabel = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+  if (DAILY_HIGHS.has(dateLabel) &&
+    DAILY_HIGHS.get(dateLabel)! > weather.high) {
+    weather.high = DAILY_HIGHS.get(dateLabel)!;
+  }
+  DAILY_HIGHS.set(dateLabel, weather.high);
 }
