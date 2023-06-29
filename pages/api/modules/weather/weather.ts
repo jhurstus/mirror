@@ -1,6 +1,7 @@
 import AmbientWeatherApi from 'ambient-weather-api'
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { PurpleAirResponse, VisualCrossingResponse } from './response_schemas';
+import { PurpleAirResponse, VisualCrossing } from './response_schemas';
+import getVisualCrossingWeatherData from './visual_crossing';
 
 export type LatLng = [number, number];
 
@@ -21,7 +22,7 @@ export type Error = {
   error: string;
 };
 export type Success = {
-  visualCrossing: VisualCrossingResponse;
+  visualCrossing: VisualCrossing;
   ambientWeather?: AmbientWeatherApi.DeviceData[];
   purpleAir?: PurpleAirResponse;
 };
@@ -35,7 +36,7 @@ export default async function handler(
     const params: Params = validateRequestParams(req);
 
     const visualCrossingPromise = getVisualCrossingWeatherData(
-      params.address, params.visualCrossingApiKey);
+      params.address, params.visualCrossingApiKey, NETWORK_TIMEOUT);
 
     let ambientWeatherPromise;;
     if (params.ambientWeatherApiKey &&
@@ -127,26 +128,6 @@ function validateRequestParams(req: NextApiRequest): Params {
 }
 
 const NETWORK_TIMEOUT = 300 * 1000;
-
-// Retrieves weather data from Visual Crossing.
-async function getVisualCrossingWeatherData(
-  address: string, visualCrossingApiKey: string): Promise<VisualCrossingResponse> {
-  const visualCrossingUrl =
-    `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${encodeURIComponent(address)}?key=${visualCrossingApiKey}&unitGroup=us`;
-  const abortController = new AbortController();
-  const timeoutId = setTimeout(() => {
-    abortController.abort();
-  }, NETWORK_TIMEOUT);
-
-  let fetchResponseJson: VisualCrossingResponse;
-  try {
-    const resp = await fetch(visualCrossingUrl, { signal: abortController.signal })
-    fetchResponseJson = await resp.json();
-  } finally {
-    clearTimeout(timeoutId);
-  }
-  return fetchResponseJson;
-}
 
 // Retrieves weather data from local Ambient Weather weather station.
 async function getAmbientWeatherData(

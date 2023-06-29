@@ -34,7 +34,7 @@ export interface VisualCrossingResponse {
   tzoffset: number
   description: string
   days: Day[]
-  alerts: string[]
+  alerts: {event: string}[]
   stations: { [key: string]: Stations }
   currentConditions: CurrentConditions
 }
@@ -148,4 +148,26 @@ export interface CurrentConditions {
   sunset: string
   sunsetEpoch: number
   moonphase: number
+}
+
+export interface VisualCrossing {
+  temperature: number,
+  summary: string,
+  windSpeed: number,
+  cloudCover: number,
+  uvIndex: number,
+  low: number,
+  high: number,
+  precipProbability: number,
+  sunrise: string,
+  sunset: string,
+  shortForecast: VisualCrossingShortForecast[],
+  alerts: string[],
+}
+
+export interface VisualCrossingShortForecast {
+  low: number,
+  high: number,
+  icon: string,
+  day: string,
 }
