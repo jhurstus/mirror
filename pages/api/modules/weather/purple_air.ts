@@ -65,7 +65,7 @@ function calculateAqi(data: PurpleAirResponse): AirQuality | undefined {
   // all sensors before sorting to find the median.
   const epaAdjustedAqis = validSensorData.map(
     o => getEPAAdjustedAQIFromPM25(o.pm25, o.humidity));
-  epaAdjustedAqis.sort();
+  epaAdjustedAqis.sort((a, b) => a - b);
   const medianSensorReading =
     epaAdjustedAqis[Math.floor(epaAdjustedAqis.length / 2)];
 
