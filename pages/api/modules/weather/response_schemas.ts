@@ -1,5 +1,7 @@
 // Generated with https://transform.tools/json-to-typescript
 
+// See https://api.purpleair.com/#api-sensors-get-sensors-data 
+// ... for further documentation.
 export interface PurpleAirResponse {
   api_version: string
   time_stamp: number
@@ -24,6 +26,8 @@ export interface PurpleAirResponse {
   ][]
 }
 
+// See https://www.visualcrossing.com/resources/documentation/weather-api/timeline-weather-api/
+// ... for further documentation.
 export interface VisualCrossingResponse {
   queryCost: number
   latitude: number

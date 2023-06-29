@@ -45,39 +45,6 @@ export default function Weather({
   return <div>Weather</div>
 }
 
-// Module.register("ambientweather", {
-//   defaults: {
-//     // Visual Crossing API key.  This value MUST be set for this module to work.
-//     // A key can be obtained from https://www.visualcrossing.com/
-//     visualCrossingApiKey: '',
-//     // Ambient Weather API and application key.  Falls back to Visual Crossing
-//     // data if unavailable. Keys can be obtained from
-//     // https://dashboard.ambientweather.net/account
-//     ambientWeatherApiKey: '',
-//     ambientWeatherApplicationKey: '',
-//     // Ambient Weather device MAC (identifier) from which to pull data.
-//     ambientWeatherDeviceMAC: '',
-//     // Address (or lat,lng) for which weather data should be displayed.  This
-//     // value MUST be set for this module to work.
-//     address: '',
-//     // Time in milliseconds between weather updates.  Visual Crossing provides
-//     // 1000 requests per day free.  To stay under that quota, choose a config
-//     // value of at least ((24*60*60*1000)/1000)==86400.
-//     updateInterval: 1000 * 60 * 5,  // 5 minutes
-//     // The maximum age in milliseconds for which a forecast will be displayed.
-//     // If data cannot be updated before this limit, the UI will be hidden, so
-//     // as to prevent the display of stale forecast data.  This value MUST be
-//     // greater than 'updateInterval'.
-//     dataAgeLimit: 1000 * 60 * 60 * 1,  // 1 hours
-//     // READ key for Purple Air web API.  See https://api.purpleair.com/
-//     purpleAirReadKey: '',
-//     // Northwest and Southeast latitudes+longitudes, defining the rectangle from
-//     // which Purple Air air quality sensor data will be drawn.
-//     // 'LAT,LNG' format.  For example, 37.795444,-122.393444.
-//     purpleAirNorthwestLatLng: '',
-//     purpleAirSoutheastLatLng: ''
-//   },
-// 
 //   start: function() {
 //       this.lastUpdateTimestamp = 0;
 //       this.forecastData = null;
@@ -143,32 +110,7 @@ export default function Weather({
 //     return this.dom;
 //   },
 // 
-//   // Converts Visual Crossing forecast api data to view model object passed to
-//   // handlebar templates.
-//   // See https://www.visualcrossing.com/resources/documentation/weather-api/timeline-weather-api/
-//   // for Visual Crossing API data format.
-//   // See https://api.purpleair.com/#api-sensors-get-sensors-data for PurpleAir
-//   // data format.
 //   getViewModel: function(data, purpleAirData) {
-//     var r = {};
-// 
-//     // current conditions
-//     var today = data.days[0];
-//     r.temperature = Math.round(data.currentConditions.feelslike);
-//     r.summary = today.description;
-//     if (r.summary.match(/\./g).length == 1) {
-//       // Remove trailing period if there's only a single sentence in the
-//       // summary.
-//       r.summary = r.summary.replace(/\.$/, '');
-//     }
-//     r.windSpeed = Math.round(data.currentConditions.windspeed);
-//     r.cloudCover = Math.round(data.currentConditions.cloudcover);
-//     r.uvIndex = data.currentConditions.uvindex;
-//     // If current temperature is outside forecasted high/low range, adjust
-//     // forecast to include present temperature.  This prevents immediately
-//     // obviously wrong displays like: current 90, lo 40, hi 80.
-//     r.low = Math.min(r.temperature, Math.round(today.feelslikemin));
-//     r.high = Math.max(r.temperature, Math.round(today.feelslikemax));
 //     // If an actual high temperature from earlier in the same day exceeds the
 //     // current forecasted high, show the historical high instead.  After it has
 //     // passed, this causes the correct daily historical high to be shown, rather
@@ -185,55 +127,6 @@ export default function Weather({
 //       r.high = this.dailyHighs[dateLabel];
 //     }
 //     this.dailyHighs[dateLabel] = r.high;
-// 
-// 
-//     // Hourly forecasts for the next 24 hours.
-//     let hourly = data.days[0].hours.slice(today.getHours());
-//     hourly = hourly.concat(data.days[1].hours.slice(0, 24 - hourly.length));
-// 
-// 
-//     // Show max precipitation probability for the rest of the day (to 4am),
-//     // instead of instantaneous probability.  This is more useful for
-//     // determining if you need an umbrella.
-//     var precipProbability = 0.0;
-//     var i = 0;
-//     do {
-//       var hour = parseInt(hourly[i].datetime.substr(0, 2), 10);
-//       precipProbability = Math.max(
-//         precipProbability, hourly[i].precipprob / 100);
-//       i++;
-//     } while (i < hourly.length && hour != 4)
-//     r.precipProbability = Math.round(100 * precipProbability);
-//     // sunrise/sunset times
-//     r.sunrise = new Date(data.days[0].sunriseEpoch * 1000)
-//         .toLocaleTimeString().replace(/:\d\d\s/, '').toLowerCase();
-//     r.sunset =  new Date(data.days[0].sunsetEpoch * 1000)
-//         .toLocaleTimeString().replace(/:\d\d\s/, '').toLowerCase();
-//     r.shortForecast = [];
-//     for (var i = 1; i < 3; i++) {
-//       var day = data.days[i];
-//       r.shortForecast.push({
-//         low: Math.round(day.feelslikemin),
-//         high: Math.round(day.feelslikemax),
-//         iconUrl: this.getIconUrl(day.icon),
-//         day: new Date(day.sunriseEpoch * 1000)
-//           .toDateString().replace(/\s.*/, '')
-//       });
-//     }
-// 
-//     // weather alerts
-//     if (data.alerts && data.alerts.length) {
-//       // De-duplicate alerts.
-//       var alertSet = {}
-//       r.alerts = [];
-//       for (var i = 0; i < data.alerts.length; i++) {
-//         var title = data.alerts[i].event;
-//         if (!alertSet[title]) {
-//           alertSet[title] = 1;
-//           r.alerts.push({title: title.replace("for San Francisco, CA", "")});
-//         }
-//       }
-//     }
 // 
 //     if (purpleAirData) {
 //       let sensors = purpleAirData.data;
@@ -275,32 +168,6 @@ export default function Weather({
 //     }
 // 
 //     return r;
-//   },
-// 
-//   // Validates Visual Crossing forecast api data has expected fields in the
-//   // expected format.
-//   // See https://www.visualcrossing.com/resources/documentation/weather-api/timeline-weather-api/
-//   isForecastDataValid: function(data) {
-//     // Ideally every utilized field of every object would be validated, but
-//     // this is a hobby project, so I'm just checking that containers exist.
-//     if (!data) {
-//       Log.info('null weather data.');
-//       return false;
-//     }
-//     if (!data.currentConditions) {
-//       Log.info('missing current weather data');
-//       return false;
-//     }
-//     if (!data.days || data.days.length < 7) {
-//       Log.info('missing daily forecasts');
-//       return false;
-//     }
-//     if (!data.days[0].hours || data.days[0].hours < 24) {
-//       Log.info('missing hourly forecasts');
-//       return false;
-//     }
-// 
-//     return true;
 //   },
 // 
 //   // Validates Ambient Weather data has expected fields in the expected format.
