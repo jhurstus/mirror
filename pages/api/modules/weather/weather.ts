@@ -1,8 +1,8 @@
-import AmbientWeatherApi from 'ambient-weather-api'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { Weather } from './response_schemas';
 import getVisualCrossingWeatherData from './visual_crossing';
 import { getPurpleAirWeatherData } from './purple_air';
+import { getAmbientWeatherData } from './ambient_weather';
 
 export type LatLng = [number, number];
 
@@ -24,7 +24,6 @@ export type Error = {
 };
 export type Success = {
   weather: Weather
-  ambientWeather?: AmbientWeatherApi.DeviceData[];
 };
 export type Response = Error | Success;
 
@@ -70,11 +69,16 @@ export default async function handler(
       weather: visualCrossing.value,
     };
 
-    if (ambientWeather.status == 'fulfilled' &&
-      ambientWeather.value &&
-      ambientWeather.value.length > 0) {
-      resp.ambientWeather = ambientWeather.value;
+    if (ambientWeather.status == 'fulfilled' && ambientWeather.value) {
+      // Override Visual Crossing current condition data with (presumably...)
+      // more precise local weather station data.
+      Object.assign(resp.weather, ambientWeather.value);
     }
+    // If current temperature is outside forecasted high/low range, adjust
+    // forecast to include present temperature.  This prevents immediately
+    // obviously wrong displays like: current 90, lo 40, hi 80.
+    resp.weather.low = Math.min(resp.weather.temperature, Math.round(resp.weather.low));
+    resp.weather.high = Math.max(resp.weather.temperature, Math.round(resp.weather.high));
 
     if (purpleAir.status == 'fulfilled' && purpleAir.value) {
       resp.weather.aqi = purpleAir.value;
@@ -127,18 +131,6 @@ function validateRequestParams(req: NextApiRequest): Params {
 }
 
 const NETWORK_TIMEOUT = 300 * 1000;
-
-// Retrieves weather data from local Ambient Weather weather station.
-async function getAmbientWeatherData(
-  ambientWeatherApiKey: string,
-  ambientWeatherApplicationKey: string,
-  ambientWeatherDeviceMAC: string): Promise<AmbientWeatherApi.DeviceData[]> {
-  const api = new AmbientWeatherApi({
-    apiKey: ambientWeatherApiKey,
-    applicationKey: ambientWeatherApplicationKey
-  });
-  return api.deviceData(ambientWeatherDeviceMAC, { limit: 1 });
-}
 
 function queryParamToLatLng(
   queryParam: string | string[] | undefined): LatLng | undefined {

@@ -69,11 +69,8 @@ function visualCrossingResponseToWeatherData(data: VisualCrossingResponse): Weat
   const windSpeed = Math.round(data.currentConditions.windspeed);
   const cloudCover = Math.round(data.currentConditions.cloudcover);
   const uvIndex = data.currentConditions.uvindex;
-  // If current temperature is outside forecasted high/low range, adjust
-  // forecast to include present temperature.  This prevents immediately
-  // obviously wrong displays like: current 90, lo 40, hi 80.
-  const low = Math.min(temperature, Math.round(today.feelslikemin));
-  const high = Math.max(temperature, Math.round(today.feelslikemax));
+  const low = Math.round(today.feelslikemin);
+  const high = Math.round(today.feelslikemax);
 
   // Hourly forecasts for the next 24 hours.
   let hourly = data.days[0].hours.slice(new Date().getHours());
