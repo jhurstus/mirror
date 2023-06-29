@@ -17,9 +17,9 @@ export async function getAmbientWeatherData(
   }
   const sensorData = data[0];
   return {
-    temperature: sensorData.feelsLike,
-    windSpeed: sensorData.windspeedmph,
-    uvIndex: sensorData.uv,
+    temperature: Math.round(sensorData.feelsLike!),
+    windSpeed: Math.round(sensorData.windspeedmph!),
+    uvIndex: Math.round(sensorData.uv!),
   };
 }
 
