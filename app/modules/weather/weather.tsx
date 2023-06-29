@@ -1,4 +1,8 @@
+'use client';
+
+import { Weather } from "@/pages/api/modules/weather/response_schemas";
 import { LatLng } from "@/pages/api/modules/weather/weather";
+import { useEffect, useState } from "react";
 
 export type WeatherProps = {
   // Visual Crossing API key.  A key can be obtained from
@@ -30,6 +34,9 @@ export type WeatherProps = {
   purpleAirSoutheastLatLng?: LatLng;
 };
 
+// Hack to avoid JSX syntax ambiguity.
+type Nullable<T> = T | null;
+
 export default function Weather({
   visualCrossingApiKey,
   address,
@@ -42,33 +49,56 @@ export default function Weather({
   purpleAirNorthwestLatLng,
   purpleAirSoutheastLatLng,
 }: WeatherProps) {
-  return <div>Weather</div>
+  const [weather, setWeather] = useState<Nullable<Weather>>(null);
+  const [lastUpdatedTimestamp, setLastUpdatedTimestamp] = useState(0);
+
+  useEffect(() => {
+    function fetchWeather() {
+      const url = new URL(window.location.origin + '/api/modules/weather/weather');
+      url.searchParams.append('visualCrossingApiKey', visualCrossingApiKey);
+      url.searchParams.append('address', address);
+      if (ambientWeatherApiKey && ambientWeatherApplicationKey && ambientWeatherDeviceMAC) {
+      url.searchParams.append('ambientWeatherApiKey', ambientWeatherApiKey);
+      url.searchParams.append('ambientWeatherApplicationKey', ambientWeatherApplicationKey);
+      url.searchParams.append('ambientWeatherDeviceMAC', ambientWeatherDeviceMAC);
+      }
+      if (purpleAirReadKey && purpleAirNorthwestLatLng && purpleAirSoutheastLatLng) {
+        url.searchParams.append('purpleAirReadKey', purpleAirReadKey);
+        url.searchParams.append('purpleAirNorthwestLatLng', JSON.stringify(purpleAirNorthwestLatLng));
+        url.searchParams.append('purpleAirSoutheastLatLng', JSON.stringify(purpleAirSoutheastLatLng));
+      }
+
+      fetch(url)
+        .then((res) => res.json())
+        .then((json) => {
+          setLastUpdatedTimestamp(Date.now());
+          setWeather(json.weather as Weather);
+        }).catch((e) => console.error(e));
+    }
+    fetchWeather();
+
+    const fetchWeatherIntervalId = window.setInterval(fetchWeather, updateInterval);
+    return () => window.clearInterval(fetchWeatherIntervalId);
+  }, [
+    visualCrossingApiKey,
+    address,
+    ambientWeatherApiKey,
+    ambientWeatherApplicationKey,
+    ambientWeatherDeviceMAC,
+    updateInterval,
+    dataAgeLimit,
+    purpleAirReadKey,
+    purpleAirNorthwestLatLng,
+    purpleAirSoutheastLatLng,
+  ]);
+
+  if (!weather || (Date.now() - lastUpdatedTimestamp) > dataAgeLimit) {
+    return <></>;
+  }
+
+  return <div>{JSON.stringify(weather)}</div>
 }
 
-//   start: function() {
-//       this.lastUpdateTimestamp = 0;
-//       this.forecastData = null;
-//       this.downloadForecast();
-//       setInterval(this.downloadForecast.bind(this), this.config.updateInterval);
-// 
-//     this.dailyHighs = {};
-//   },
-// 
-//   socketNotificationReceived: function(notification, payload) {
-//           this.forecastData = data;
-//           this.lastUpdateTimestamp = Date.now();
-//           this.updateDom(this.config.animationDuration);
-//   },
-// 
-//   getDom: function() {
-//     if (!this.forecastData ||
-//         (Date.now() - this.lastUpdateTimestamp) > this.config.dataAgeLimit) {
-//       return document.createElement('div');
-//     }
-// 
-//     this.dom.innerHTML = this.mainTemplate(this.viewModel);
-//   },
-// 
 //   // Maps Visual Crossing 'icon' enum values to actual icon filenames.
 //   getIconUrl: function(iconName) {
 //     var iconMap = {
