@@ -39,8 +39,15 @@ export default function Home() {
           purpleAirReadKey={process.env.NEXT_PUBLIC_WEATHER_PURPLE_AIR_READ_KEY!}
           purpleAirNorthwestLatLng={JSON.parse(process.env.NEXT_PUBLIC_WEATHER_PURPLE_AIR_NORTHWEST_LATLNG!)}
           purpleAirSoutheastLatLng={JSON.parse(process.env.NEXT_PUBLIC_WEATHER_PURPLE_AIR_SOUTHEAST_LATLNG!)} />
-        <Memo
-          url={process.env.NEXT_PUBLIC_MEMO_URL!} />
+        <div style={{ position: 'absolute', bottom: 0, textAlign: 'center', width: '100%' }}>
+          {/*<Iframe
+            src="https://www.purpleair.com/map?opt=1/m/i/mAQI/a10/cC5#11.19/37.7269/-122.4377"
+            height="783px"
+            width="556px"
+            updateInterval={1000 * 60 * 30} />*/}
+          <Memo
+            url={process.env.NEXT_PUBLIC_MEMO_URL!} />
+        </div>
 
       </PrivacyProvider>
     </main>
