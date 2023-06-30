@@ -1,5 +1,6 @@
 'use client';
 
+import Calendar from './modules/calendar/calendar';
 import Clock from './modules/clock/clock'
 import Memo from './modules/memo/memo'
 import Muni from './modules/muni/muni'
@@ -21,6 +22,7 @@ export default function Home() {
           dataAgeLimit={1000 * 60 * 5}
           developerKey={process.env.NEXT_PUBLIC_MUNI_KEY!}
           stops={JSON.parse(process.env.NEXT_PUBLIC_MUNI_STOPS!)} />
+        <Calendar />
         <Weasley
           firebaseConfig={JSON.parse(process.env.NEXT_PUBLIC_WEASLEY_FIREBASE!)}
           email={process.env.NEXT_PUBLIC_WEASLEY_EMAIL!}

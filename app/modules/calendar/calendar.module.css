@@ -1,0 +1,26 @@
+.calendar {
+  margin-top: 70px;
+}
+.calendar, .calendar tr, .calendar th, .calendar td {
+  border: 0;
+  border-spacing: 0;
+}
+.label {
+  font-weight: normal;
+  font-size: 2.4rem;
+  line-height: 2.5rem;
+  padding: 30px 0 5px 0;
+  text-align: left;
+}
+.time {
+  font-size: 2rem;
+  line-height: 2.5rem;
+  padding-right: 1em;
+}
+.title {
+  padding-left: 0;
+  padding-right: 0;
+  white-space: nowrap;
+  font-size: 2rem;
+  line-height: 2.5rem;
+}
