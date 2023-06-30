@@ -35,13 +35,17 @@ export default function Calendar() {
       {
         label: 'Tomorrow',
         events: [
-          { title: 'And oranges', time: 'All day', id: '2'},
+          { title: 'And oranges', time: 'All day', id: '2' },
         ]
       }
     ]
   };
 
   if (!data) return <></>;
+
+  if (data.days[0].events.length == 0 && data.days[1].events.length == 0) {
+    return <div className={styles.none}>No upcoming events</div>
+  }
 
   return (
     <table className={styles.calendar}>
@@ -52,6 +56,8 @@ export default function Calendar() {
 }
 
 function Day(day: CalendarDay) {
+  if (day.events.length == 0) return <></>;
+
   return (
     <>
       <tr><th className={styles.label} colSpan={2}>{day.label}</th></tr>

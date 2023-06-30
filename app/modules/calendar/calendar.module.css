@@ -24,3 +24,9 @@
   font-size: 2rem;
   line-height: 2.5rem;
 }
+.none {
+  font-size: 2rem;
+  line-height: 2.5rem;
+  margin-top: 70px;
+  color: #666;
+}
