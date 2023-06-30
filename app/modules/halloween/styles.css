@@ -1,6 +1,0 @@
-.fullscreen.below {
-  background: url(/modules/hurst/halloween/public/skull.jpg) no-repeat fixed;
-  background-position: 50% 25%;
-  opacity: 0.5;
-  transform: scaleX(-1);
-}
