@@ -1,5 +1,8 @@
+/* "!important" rules in this file override styles set in FullCalendar container
+ * elements.
+ */
 .calendar {
-  margin-top: 70px;
+  margin-top: 47px;
 }
 .calendar, .calendar tr, .calendar th, .calendar td {
   border: 0;
@@ -9,13 +12,13 @@
   font-weight: normal;
   font-size: 2.4rem;
   line-height: 2.5rem;
-  padding: 30px 0 5px 0;
-  text-align: left;
+  padding: 30px 0 5px 0 !important;
+  text-align: left !important;
 }
 .time {
   font-size: 2rem;
   line-height: 2.5rem;
-  padding-right: 1em;
+  padding: 1px 1em 1px 1px !important;
 }
 .title {
   padding-left: 0;

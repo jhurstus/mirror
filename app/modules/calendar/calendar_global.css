@@ -1,0 +1,7 @@
+/* Position FullCalendar as a plain static element. */
+.fc-view-harness {
+  height: auto !important;
+}
+.fc-custom-view {
+  position: static !important;
+}

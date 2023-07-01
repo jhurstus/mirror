@@ -22,7 +22,7 @@ export default function Home() {
           dataAgeLimit={1000 * 60 * 5}
           developerKey={process.env.NEXT_PUBLIC_MUNI_KEY!}
           stops={JSON.parse(process.env.NEXT_PUBLIC_MUNI_STOPS!)} />
-        <Calendar />
+        <Calendar calendars={JSON.parse(process.env.NEXT_PUBLIC_CALENDAR_CALENDARS!)} />
         <Weasley
           firebaseConfig={JSON.parse(process.env.NEXT_PUBLIC_WEASLEY_FIREBASE!)}
           email={process.env.NEXT_PUBLIC_WEASLEY_EMAIL!}
