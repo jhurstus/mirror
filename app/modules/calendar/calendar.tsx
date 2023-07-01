@@ -46,7 +46,6 @@ export default function Calendar({
   // TODO: implement maximumEntries.
   // TODO: implement maxTitleLength.
   // TODO: implement updateInterval.
-  // TODO: support multiple calendars.
   // TODO: implement italic calendars.
   return (
     // Google Calendar stores times as 'UTC', but actually adjusts for local
@@ -64,10 +63,14 @@ export default function Calendar({
       footerToolbar={false}
       themeSystem="bootstrap5"
       duration={{ days: 3 }}
-      events={{
-        url: `/api/modules/calendar/calendar?url=${encodeURIComponent(calendars[0].icsUrl)}`,
-        format: 'ics'
-      }}
+      eventSources={
+        calendars.map((c) => {
+          return {
+            url: `/api/modules/calendar/calendar?url=${encodeURIComponent(c.icsUrl)}`,
+            format: 'ics',
+          }
+        })
+      }
     />
   );
 }

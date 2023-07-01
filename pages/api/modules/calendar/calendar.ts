@@ -5,6 +5,9 @@ export type Params = {
   url: string;
 };
 
+// Returns the raw ICS text for the given URL.  This is just a lightweight http
+// proxy, needed since we can't do CORS with most calendar ical providers
+// (including Google Calendar).
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<string>
