@@ -10,7 +10,6 @@ import moment from 'moment'
 
 export type CalendarProps = {
   calendars: [CalendarConfigs, ...CalendarConfigs[]];
-  maximumEntries?: number;
   maxTitleLength?: number;
   updateInterval?: number;
 };
@@ -39,7 +38,6 @@ interface CalendarEvent {
 
 export default function Calendar({
   calendars,
-  maximumEntries = 20,
   maxTitleLength = 30,
   updateInterval = 15 * 60 * 1000,
 }: CalendarProps) {
