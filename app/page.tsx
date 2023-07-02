@@ -1,5 +1,6 @@
 'use client';
 
+import Abode from './modules/abode/Abode';
 import Calendar from './modules/calendar/calendar';
 import Clock from './modules/clock/clock'
 import Memo from './modules/memo/memo'
@@ -47,6 +48,7 @@ export default function Home() {
           <Memo
             url={process.env.NEXT_PUBLIC_MEMO_URL!} />
         </div>
+        <Abode />
 
       </PrivacyProvider>
     </main>
