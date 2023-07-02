@@ -11,10 +11,7 @@ import Weather from './modules/weather/weather';
 export default function Home() {
   return (
     <main>
-      <PrivacyProvider
-        firebaseConfig={JSON.parse(process.env.NEXT_PUBLIC_WEASLEY_FIREBASE!)}
-        email={process.env.NEXT_PUBLIC_WEASLEY_EMAIL!}
-        password={process.env.NEXT_PUBLIC_WEASLEY_PASSWORD!}>
+      <PrivacyProvider>
 
         <Clock />
         <Muni
@@ -27,9 +24,6 @@ export default function Home() {
           maxTitleLength={40}
           updateInterval={1000 * 60 * 15} />
         <Weasley
-          firebaseConfig={JSON.parse(process.env.NEXT_PUBLIC_WEASLEY_FIREBASE!)}
-          email={process.env.NEXT_PUBLIC_WEASLEY_EMAIL!}
-          password={process.env.NEXT_PUBLIC_WEASLEY_PASSWORD!}
           usersArr={JSON.parse(process.env.NEXT_PUBLIC_WEASLEY_USERS!)}
           homeCountry='United States'
           homeState='California'

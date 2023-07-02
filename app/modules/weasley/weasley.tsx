@@ -1,27 +1,13 @@
 'use client';
 
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { getDatabase, onValue, ref } from 'firebase/database';
+import { onValue, ref } from 'firebase/database';
 import { useContext, useEffect, useState } from 'react';
 import { Geofence, Location, getAggregatedLocationDescriptions, isFirebaseDbGeofencesVal, isFirebaseDbUsersVal } from './geo_utils';
 import styles from './weasley.module.css';
 import { IsInPrivacyModeContext } from '../privacy/privacy';
-
-// See: https://firebase.google.com/docs/web/learn-more#config-object
-export type FirebaseConfig = {
-  apiKey: string;
-  authDomain: string;
-  databaseURL: string;
-  storageBucket: string;
-  messagingSenderId: string;
-};
+import getFirebaseDb from '@/app/lib/firebase';
 
 export type WeasleyProps = {
-  firebaseConfig: FirebaseConfig;
-  // Firebase email auth.
-  email: string;
-  password: string;
   // Users to track (firebase user id to display name), in the format of 'Map'
   // constructor args, i.e. [[userId, name], ...].
   usersArr: [string, string][];
@@ -32,9 +18,6 @@ export type WeasleyProps = {
 };
 
 export default function Weasley({
-  firebaseConfig,
-  email,
-  password,
   usersArr,
   homeCountry,
   homeState,
@@ -46,13 +29,9 @@ export default function Weasley({
   const [locations, setLocations] = useState<Location[]>([]);
 
   useEffect(() => {
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
     const users = new Map<string, string>(usersArr);
 
-    signInWithEmailAndPassword(auth, email, password).then((userCredential) => {
-      const database = getDatabase(app);
-
+    getFirebaseDb().then((database) => {
       const usersRef = ref(database, 'users');
       onValue(usersRef, (snapshot) => {
         const val = snapshot.val();
@@ -81,11 +60,7 @@ export default function Weasley({
     }).catch((error) => {
       console.error(error.message);
     });
-
-    return () => {
-      auth.signOut();
-    };
-  }, [email, firebaseConfig, password, usersArr]);
+  }, [usersArr]);
 
   if (isInPrivacyMode) return <></>;
 
