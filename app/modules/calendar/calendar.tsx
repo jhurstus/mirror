@@ -43,7 +43,6 @@ const CalendarViewContext = createContext<CalendarProps | undefined>(undefined);
 
 export default function Calendar(props: CalendarProps) {
   // TODO: implement updateInterval.
-  // TODO: implement italic calendars.
   return (
     // Google Calendar stores times as 'UTC', but actually adjusts for local
     // event timezone.  Correct for that here by setting the display timezone
@@ -66,6 +65,7 @@ export default function Calendar(props: CalendarProps) {
             return {
               url: `/api/modules/calendar/calendar?url=${encodeURIComponent(c.icsUrl)}`,
               format: 'ics',
+              classNames: c.italic ? ['italic'] : [],
             }
           })
         }
@@ -175,7 +175,7 @@ function eventRenderRangeToCalendarEvent(event: EventRenderRange): CalendarEvent
     time: event.def.allDay ?
       'All day' :
       moment(event.instance?.range.start).format('h:mma'),
-    italic: false,
+    italic: event.ui.classNames.includes('italic'),
     id: event.def.defId,
   };
 }
