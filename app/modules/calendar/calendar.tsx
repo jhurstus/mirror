@@ -2,12 +2,12 @@
 
 import styles from './calendar.module.css'
 import './calendar_global.css'
-import { Duration, EventRenderRange, Calendar as FCalendar, createPlugin, sliceEvents } from '@fullcalendar/core'
+import { Duration, EventRenderRange, createPlugin, sliceEvents } from '@fullcalendar/core'
 import iCalendarPlugin from '@fullcalendar/icalendar'
 import { DateProfile, ViewProps } from '@fullcalendar/core/internal'
 import FullCalendar from '@fullcalendar/react'
 import moment from 'moment'
-import { createContext, useContext } from 'react';
+import { createContext, createRef, useContext, useEffect } from 'react';
 
 export type CalendarProps = {
   calendars: [CalendarConfigs, ...CalendarConfigs[]];
@@ -42,7 +42,15 @@ interface CalendarEvent {
 const CalendarViewContext = createContext<CalendarProps | undefined>(undefined);
 
 export default function Calendar(props: CalendarProps) {
-  // TODO: implement updateInterval.
+  const calendarRef = createRef<FullCalendar>();
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      calendarRef.current?.getApi().refetchEvents();
+    }, props.updateInterval);
+    return () => window.clearInterval(interval);
+  }, [props.updateInterval, calendarRef]);
+
   return (
     // Google Calendar stores times as 'UTC', but actually adjusts for local
     // event timezone.  Correct for that here by setting the display timezone
@@ -53,6 +61,7 @@ export default function Calendar(props: CalendarProps) {
     // timezone is UTC-X (vs. UTC+X).
     <CalendarViewContext.Provider value={props}>
       <FullCalendar
+        ref={calendarRef}
         timeZone='UTC'
         plugins={[iCalendarPlugin, customViewPlugin]}
         initialView="custom"
@@ -176,7 +185,7 @@ function eventRenderRangeToCalendarEvent(event: EventRenderRange): CalendarEvent
       'All day' :
       moment(event.instance?.range.start).format('h:mma'),
     italic: event.ui.classNames.includes('italic'),
-    id: event.def.defId,
+    id: event.instance?.instanceId || event.def.defId,
   };
 }
 
