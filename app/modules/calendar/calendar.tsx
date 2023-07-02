@@ -91,9 +91,9 @@ export default function Calendar(props: CalendarProps) {
 
 // A displayed day in the calendar (either 'today' or 'tomorrow').
 function Day(day: CalendarDay) {
-  if (day.events.length == 0) return <></>;
-
   const calendarProps: CalendarProps = useContext(CalendarViewContext)!;
+
+  if (day.events.length == 0) return <></>;
 
   return (
     <>
