@@ -8,6 +8,7 @@ import { DateProfile, ViewProps } from '@fullcalendar/core/internal'
 import FullCalendar from '@fullcalendar/react'
 import moment from 'moment'
 import { createContext, createRef, useContext, useEffect } from 'react';
+import { IsInPrivacyModeContext } from '../privacy/privacy';
 
 export type CalendarProps = {
   calendars: [CalendarConfigs, ...CalendarConfigs[]];
@@ -43,6 +44,7 @@ const CalendarViewContext = createContext<CalendarProps | undefined>(undefined);
 
 export default function Calendar(props: CalendarProps) {
   const calendarRef = createRef<FullCalendar>();
+  const isInPrivacyMode = useContext(IsInPrivacyModeContext);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -50,6 +52,10 @@ export default function Calendar(props: CalendarProps) {
     }, props.updateInterval);
     return () => window.clearInterval(interval);
   }, [props.updateInterval, calendarRef]);
+
+  if (isInPrivacyMode) {
+    return <></>;
+  }
 
   return (
     // Google Calendar stores times as 'UTC', but actually adjusts for local
