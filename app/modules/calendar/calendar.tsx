@@ -7,11 +7,12 @@ import iCalendarPlugin from '@fullcalendar/icalendar'
 import { DateProfile, ViewProps } from '@fullcalendar/core/internal'
 import FullCalendar from '@fullcalendar/react'
 import moment from 'moment'
+import { createContext, useContext } from 'react';
 
 export type CalendarProps = {
   calendars: [CalendarConfigs, ...CalendarConfigs[]];
-  maxTitleLength?: number;
-  updateInterval?: number;
+  maxTitleLength: number;
+  updateInterval: number;
 };
 export type CalendarConfigs = {
   // URL from which ICS for this calendar can be downloaded.
@@ -36,13 +37,11 @@ interface CalendarEvent {
   id: string;
 }
 
-export default function Calendar({
-  calendars,
-  maxTitleLength = 30,
-  updateInterval = 15 * 60 * 1000,
-}: CalendarProps) {
-  // TODO: implement maximumEntries.
-  // TODO: implement maxTitleLength.
+// FullCalendar does not provide a way to pass props to the custom view
+// component, so we pass down our props as context instead.
+const CalendarViewContext = createContext<CalendarProps | undefined>(undefined);
+
+export default function Calendar(props: CalendarProps) {
   // TODO: implement updateInterval.
   // TODO: implement italic calendars.
   return (
@@ -53,29 +52,33 @@ export default function Calendar({
     // timezone, so request an extra day of data (3) and later filter out
     // events past tomorrow midnight local time.  This works because my local
     // timezone is UTC-X (vs. UTC+X).
-    <FullCalendar
-      timeZone='UTC'
-      plugins={[iCalendarPlugin, customViewPlugin]}
-      initialView="custom"
-      headerToolbar={false}
-      footerToolbar={false}
-      themeSystem="bootstrap5"
-      duration={{ days: 3 }}
-      eventSources={
-        calendars.map((c) => {
-          return {
-            url: `/api/modules/calendar/calendar?url=${encodeURIComponent(c.icsUrl)}`,
-            format: 'ics',
-          }
-        })
-      }
-    />
+    <CalendarViewContext.Provider value={props}>
+      <FullCalendar
+        timeZone='UTC'
+        plugins={[iCalendarPlugin, customViewPlugin]}
+        initialView="custom"
+        headerToolbar={false}
+        footerToolbar={false}
+        themeSystem="bootstrap5"
+        duration={{ days: 3 }}
+        eventSources={
+          props.calendars.map((c) => {
+            return {
+              url: `/api/modules/calendar/calendar?url=${encodeURIComponent(c.icsUrl)}`,
+              format: 'ics',
+            }
+          })
+        }
+      />
+    </CalendarViewContext.Provider>
   );
 }
 
 // A displayed day in the calendar (either 'today' or 'tomorrow').
 function Day(day: CalendarDay) {
   if (day.events.length == 0) return <></>;
+
+  const calendarProps: CalendarProps = useContext(CalendarViewContext)!;
 
   return (
     <>
@@ -86,7 +89,11 @@ function Day(day: CalendarDay) {
             <td className={styles.time}>{event.time}</td>
             <td
               className={styles.title}
-              style={{ fontStyle: event.italic ? 'italic' : 'normal' }}>{event.title}</td>
+              style={{ fontStyle: event.italic ? 'italic' : 'normal' }}>{
+                event.title.length > calendarProps.maxTitleLength! ?
+                  event.title.substring(0, calendarProps.maxTitleLength!) + String.fromCharCode(0x2026) :
+                  event.title
+              }</td>
           </tr>
         );
       })}
@@ -127,7 +134,7 @@ const customViewPlugin = createPlugin({
 
 // Converts FullCalendar event data to the format used by Day component props.
 function fullCalendarDataToProps(data: EventRenderRange[]): CalendarData {
-  data = [...data].sort(sortCalendarEvents);
+  data = [...data].sort(calendarEventsCompareFn);
 
   const todayEvents: CalendarEvent[] = [];
   const tomorrowEvents: CalendarEvent[] = [];
@@ -176,7 +183,7 @@ function eventRenderRangeToCalendarEvent(event: EventRenderRange): CalendarEvent
 // An Array#sort comparefn that sorts events by:
 // 1. All day events (alphabetically by title).
 // 2. Timed events (chronologically by start time).
-function sortCalendarEvents(a: EventRenderRange, b: EventRenderRange): number {
+function calendarEventsCompareFn(a: EventRenderRange, b: EventRenderRange): number {
   if (a.def.allDay && !b.def.allDay) {
     return -1;
   } else if (!a.def.allDay && b.def.allDay) {
