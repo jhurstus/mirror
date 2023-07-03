@@ -62,19 +62,20 @@ export default function Calendar(props: CalendarProps) {
     // event timezone.  Correct for that here by setting the display timezone
     // to UTC.
     // For that same reason, day/duration ranges don't line up with local
-    // timezone, so request an extra day of data (3) and later filter out
-    // events past tomorrow midnight local time.  This works because my local
-    // timezone is UTC-X (vs. UTC+X).
+    // timezone, so request an extra day of data and later filter out events
+    // past tomorrow midnight local time.  This works because my local timezone
+    // is UTC-X (vs. UTC+X).
     <CalendarViewContext.Provider value={props}>
       <FullCalendar
         ref={calendarRef}
         timeZone='UTC'
         plugins={[iCalendarPlugin, customViewPlugin]}
         initialView="custom"
+        initialDate={moment(new Date()).subtract(1, 'day').toDate()}
         headerToolbar={false}
         footerToolbar={false}
         themeSystem="bootstrap5"
-        duration={{ days: 3 }}
+        duration={{ days: 4 }}
         eventSources={
           props.calendars.map((c) => {
             return {
@@ -157,6 +158,7 @@ function fullCalendarDataToProps(data: EventRenderRange[]): CalendarData {
 
   for (const event of data) {
     const start = getEventStartTime(event);
+    const end = getEventEndTime(event);
 
     // As noted above, FullCalendar returns 3 days of data, so filter out events
     // beginning after the end of tomorrow.
@@ -164,7 +166,7 @@ function fullCalendarDataToProps(data: EventRenderRange[]): CalendarData {
       continue;
     }
     // Filter out events that have already ended.
-    if (event.instance?.range.end && event.instance.range.end < now) {
+    if (end < now) {
       continue;
     }
 
@@ -222,4 +224,15 @@ function getEventStartTime(event: EventRenderRange): Date {
   }
 
   return event.instance!.range.start;
+}
+
+// Gets the corrected end time of a FullCalendar event.
+function getEventEndTime(event: EventRenderRange): Date {
+  if (event.def.allDay) {
+    // All day event start/end times are not timezone adjusted, so do that
+    // here.
+    return moment(event.instance!.range.end).add(new Date().getTimezoneOffset(), 'minutes').toDate();
+  }
+
+  return event.instance!.range.end!;
 }
