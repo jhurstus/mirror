@@ -10,3 +10,7 @@ body {
   margin: 5px 10px;
   -webkit-font-smoothing: antialiased;
 }
+
+body::-webkit-scrollbar {
+  display: none;
+}
