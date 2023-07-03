@@ -25,7 +25,7 @@ export default function Abode() {
       className={styles.abode}
       src="/modules/abode/home.svg"
       alt="home security system armed"
-      width={50}
-      height={50} />
+      width={25}
+      height={25} />
   );
 }

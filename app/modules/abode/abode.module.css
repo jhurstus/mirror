@@ -1,5 +1,7 @@
 .abode {
   position: absolute;
-  bottom: 65px;
-  right: 32px;
+  bottom: 0;
+  display: block;
+  margin: 0 auto;
+  width: 100vw;
 }
