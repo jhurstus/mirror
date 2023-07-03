@@ -170,10 +170,19 @@ function fullCalendarDataToProps(data: EventRenderRange[]): CalendarData {
       continue;
     }
 
-    if (start > moment().endOf('day').toDate()) {
-      tomorrowEvents.push(eventRenderRangeToCalendarEvent(event));
+    if (event.def.allDay) {
+      if (start < moment().endOf('day').toDate()) {
+        todayEvents.push(eventRenderRangeToCalendarEvent(event));
+      }
+      if (end > moment().endOf('day').add(1, 'hours').toDate()) {
+        tomorrowEvents.push(eventRenderRangeToCalendarEvent(event));
+      }
     } else {
-      todayEvents.push(eventRenderRangeToCalendarEvent(event));
+      if (start > moment().endOf('day').toDate()) {
+        tomorrowEvents.push(eventRenderRangeToCalendarEvent(event));
+      } else {
+        todayEvents.push(eventRenderRangeToCalendarEvent(event));
+      }
     }
   }
 
