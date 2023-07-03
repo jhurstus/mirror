@@ -5,27 +5,41 @@ import getFirebaseDb from '@/app/lib/firebase';
 import { onValue, ref } from 'firebase/database';
 
 export default function Abode() {
-  const [armed, setArmed] = useState<boolean>(false);
+  const [isArmed, setIsArmed] = useState<boolean>(false);
+  const [isGarageOpen, setIsGarageOpen] = useState<boolean>(false);
 
   useEffect(() => {
     getFirebaseDb().then((database) => {
       const isArmedRef = ref(database, 'home/isArmed');
       onValue(isArmedRef, (snapshot) => {
-        setArmed(snapshot.val());
+        setIsArmed(snapshot.val());
+      });
+      const isGarageOpenRef = ref(database, 'home/isGarageOpen');
+      onValue(isGarageOpenRef, (snapshot) => {
+        setIsGarageOpen(snapshot.val());
       });
     }).catch((error) => {
       console.error(error.message);
     });
   }, []);
 
-  if (!armed) return <></>;
-
   return (
-    <Image
-      className={styles.abode}
-      src="/modules/abode/home.svg"
-      alt="home security system armed"
-      width={25}
-      height={25} />
+    <div className={styles.abode}>
+      {isArmed &&
+        <Image
+          className={styles.img}
+          src="/modules/abode/home.svg"
+          alt="home security system armed"
+          width={25}
+          height={25} />}
+      {isGarageOpen &&
+        <Image
+          className={styles.img}
+          src="/modules/abode/garage.svg"
+          alt="garage door open"
+          width={25}
+          height={25} />
+      }
+    </div>
   );
 }
