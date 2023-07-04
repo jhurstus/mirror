@@ -152,8 +152,8 @@ const customViewPlugin = createPlugin({
 function fullCalendarDataToProps(data: EventRenderRange[]): CalendarData {
   data = [...data].sort(calendarEventsCompareFn);
 
-  const todayEvents: CalendarEvent[] = [];
-  const tomorrowEvents: CalendarEvent[] = [];
+  let todayEvents: CalendarEvent[] = [];
+  let tomorrowEvents: CalendarEvent[] = [];
   const now = new Date();
 
   for (const event of data) {
@@ -186,11 +186,27 @@ function fullCalendarDataToProps(data: EventRenderRange[]): CalendarData {
     }
   }
 
+  todayEvents = todayEvents.filter(filterDuplicateEvents());
+  tomorrowEvents = tomorrowEvents.filter(filterDuplicateEvents());
+
   return {
     days: [
       { label: 'Today', events: todayEvents },
       { label: 'Tomorrow', events: tomorrowEvents }
     ] as [CalendarDay, CalendarDay]
+  };
+}
+
+// Returns an Array#filter callback that filters out duplicate events.
+function filterDuplicateEvents(): (value: CalendarEvent) => boolean {
+  const seenEvents = new Set<string>();
+  return ({title, time}: CalendarEvent) => {
+    const key = JSON.stringify([title, time]);
+    if (seenEvents.has(key)) {
+      return false;
+    }
+    seenEvents.add(key);
+    return true;
   };
 }
 
