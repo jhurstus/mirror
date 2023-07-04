@@ -30,15 +30,15 @@ export default function Abode() {
           className={styles.img}
           src="/modules/abode/home.svg"
           alt="home security system armed"
-          width={25}
-          height={25} />}
+          width={35}
+          height={35} />}
       {isGarageOpen &&
         <Image
           className={styles.img}
           src="/modules/abode/garage.svg"
           alt="garage door open"
-          width={25}
-          height={25} />
+          width={35}
+          height={35} />
       }
     </div>
   );
