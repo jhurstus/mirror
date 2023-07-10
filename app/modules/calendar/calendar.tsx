@@ -2,7 +2,7 @@
 
 import styles from './calendar.module.css'
 import './calendar_global.css'
-import { Duration, EventRenderRange, createPlugin, sliceEvents } from '@fullcalendar/core'
+import { Duration, EventInputTransformer, EventRenderRange, createPlugin, sliceEvents } from '@fullcalendar/core'
 import iCalendarPlugin from '@fullcalendar/icalendar'
 import { DateProfile, ViewProps } from '@fullcalendar/core/internal'
 import FullCalendar from '@fullcalendar/react'
@@ -57,6 +57,34 @@ export default function Calendar(props: CalendarProps) {
     return <></>;
   }
 
+  // FullCalendar ical/rrule support doesn't correctly handle google calendar
+  // ics's weird mixture of localized and UTC datetimes.  We correct for that
+  // by:
+  //   - Setting the calendar's display timezone to local time, which avoids
+  //   unwanted FullCalendar internal logic that adjusts timezones for events
+  //   that don't encode that info explicitly.  As a consequence, all event
+  //   start/end times are now set as if in UTC time.  As a result, we ...
+  //   - Shift all event start/end times from UTC to local time (via time
+  //   adjustment, not timezone change).
+  //   - Disable 'AllDay' heuristics, since FullCalendar thinks the underlying
+  //   FullDay events are in UTC time and thus straddle midnight in local time.
+  //   Consequently, 'allDay' properties are incorrect and we make that
+  //   determination with the isEventAllDay function below.
+  const eventDataTransform: EventInputTransformer = ({ title, start, end }) => {
+    function transformStartEndTime(timeStr: string): string {
+      return moment(timeStr)
+        .add(new Date().getTimezoneOffset(), 'minutes')
+        .format('YYYY-MM-DDTHH:mm:ss');
+    }
+
+    return {
+      title: title,
+      start: transformStartEndTime(start as string),
+      end: transformStartEndTime(end as string),
+      allDay: false,
+    };
+  };
+
   return (
     // Google Calendar stores times as 'UTC', but actually adjusts for local
     // event timezone.  Correct for that here by setting the display timezone
@@ -68,8 +96,9 @@ export default function Calendar(props: CalendarProps) {
     <CalendarViewContext.Provider value={props}>
       <FullCalendar
         ref={calendarRef}
-        timeZone='UTC'
+        timeZone='local'
         plugins={[iCalendarPlugin, customViewPlugin]}
+        eventDataTransform={eventDataTransform}
         initialView="custom"
         initialDate={moment(new Date()).subtract(1, 'day').toDate()}
         headerToolbar={false}
@@ -157,8 +186,8 @@ function fullCalendarDataToProps(data: EventRenderRange[]): CalendarData {
   const now = new Date();
 
   for (const event of data) {
-    const start = getEventStartTime(event);
-    const end = getEventEndTime(event);
+    const start = event.instance!.range.start;
+    const end = event.instance!.range.end!;
 
     // As noted above, FullCalendar returns 3 days of data, so filter out events
     // beginning after the end of tomorrow.
@@ -170,7 +199,7 @@ function fullCalendarDataToProps(data: EventRenderRange[]): CalendarData {
       continue;
     }
 
-    if (event.def.allDay) {
+    if (isEventAllDay(event)) {
       if (start < moment().endOf('day').toDate()) {
         todayEvents.push(eventRenderRangeToCalendarEvent(event));
       }
@@ -200,7 +229,7 @@ function fullCalendarDataToProps(data: EventRenderRange[]): CalendarData {
 // Returns an Array#filter callback that filters out duplicate events.
 function filterDuplicateEvents(): (value: CalendarEvent) => boolean {
   const seenEvents = new Set<string>();
-  return ({title, time}: CalendarEvent) => {
+  return ({ title, time }: CalendarEvent) => {
     const key = JSON.stringify([title, time]);
     if (seenEvents.has(key)) {
       return false;
@@ -214,7 +243,7 @@ function filterDuplicateEvents(): (value: CalendarEvent) => boolean {
 function eventRenderRangeToCalendarEvent(event: EventRenderRange): CalendarEvent {
   return {
     title: event.def.title[0].toUpperCase() + event.def.title.substring(1),
-    time: event.def.allDay ?
+    time: isEventAllDay(event) ?
       'All day' :
       moment(event.instance?.range.start).format('h:mma'),
     italic: event.ui.classNames.includes('italic'),
@@ -226,11 +255,11 @@ function eventRenderRangeToCalendarEvent(event: EventRenderRange): CalendarEvent
 // 1. All day events (alphabetically by title).
 // 2. Timed events (chronologically by start time).
 function calendarEventsCompareFn(a: EventRenderRange, b: EventRenderRange): number {
-  if (a.def.allDay && !b.def.allDay) {
+  if (isEventAllDay(a) && !isEventAllDay(b)) {
     return -1;
-  } else if (!a.def.allDay && b.def.allDay) {
+  } else if (!isEventAllDay(a) && isEventAllDay(b)) {
     return 1;
-  } else if (a.def.allDay && b.def.allDay) {
+  } else if (isEventAllDay(a) && isEventAllDay(b)) {
     return a.def.title.localeCompare(b.def.title);
   }
 
@@ -240,24 +269,12 @@ function calendarEventsCompareFn(a: EventRenderRange, b: EventRenderRange): numb
   return 0;
 }
 
-// Gets the corrected start time of a FullCalendar event.
-function getEventStartTime(event: EventRenderRange): Date {
-  if (event.def.allDay) {
-    // All day event start/end times are not timezone adjusted, so do that
-    // here.
-    return moment(event.instance!.range.start).add(new Date().getTimezoneOffset(), 'minutes').toDate();
-  }
-
-  return event.instance!.range.start;
-}
-
-// Gets the corrected end time of a FullCalendar event.
-function getEventEndTime(event: EventRenderRange): Date {
-  if (event.def.allDay) {
-    // All day event start/end times are not timezone adjusted, so do that
-    // here.
-    return moment(event.instance!.range.end).add(new Date().getTimezoneOffset(), 'minutes').toDate();
-  }
-
-  return event.instance!.range.end!;
+// Whether the passed event is an 'all day' event.
+// NOTE: this is the canonical way to determine whether an event is all-day.
+// The built-in event.def.allDay determination may be incorrect.
+function isEventAllDay(event: EventRenderRange): boolean {
+  return event.instance!.range.start.getHours() == 0 &&
+    event.instance!.range.start.getMinutes() == 0 &&
+    event.instance!.range.end!.getHours() == 0 &&
+    event.instance!.range.end!.getMinutes() == 0;
 }
