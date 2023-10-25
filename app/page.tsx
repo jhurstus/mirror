@@ -45,8 +45,7 @@ export default function Home() {
             height="783px"
             width="556px"
             updateInterval={1000 * 60 * 30} />*/}
-          <Memo
-            url={process.env.NEXT_PUBLIC_MEMO_URL!} />
+          <Memo />
         </div>
         <Abode />
 

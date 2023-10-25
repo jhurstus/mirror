@@ -2,53 +2,32 @@
 
 import { useContext, useEffect, useState } from 'react';
 import styles from './memo.module.css'
-import { Response } from '@/pages/api/modules/memo/memo'
 import { Amatic_SC } from 'next/font/google';
 import { IsInPrivacyModeContext } from '../privacy/privacy';
+import getFirebaseDb from '@/app/lib/firebase';
+import { onValue, ref } from 'firebase/database';
 
 const amaticSc = Amatic_SC({
   subsets: ['latin'],
   weight: ['700'],
 });
 
-// Hack to avoid JSX syntax ambiguity.
-type Nullable<T> = T | null;
-
-export type MemoProps = {
-  // URL from which to download memo content.
-  url: string;
-  // Time in milliseconds between memo updates.
-  updateInterval?: number
-};
-
-export default function Memo({
-  url,
-  updateInterval = 10 * 1000
-}: MemoProps) {
+export default function Memo({}) {
   const isInPrivacyMode = useContext(IsInPrivacyModeContext);
 
-  const [memoData, setMemoData] = useState<Nullable<Response>>(null);
+  const [memoData, setMemoData] = useState<string>('');
 
   useEffect(() => {
-    function fetchMemo() {
-      fetch(`/api/modules/memo/memo?url=${encodeURIComponent(url)}`)
-        .then((res) => res.json())
-        .then((json) => {
-          setMemoData(json);
-        }).catch((e) => console.error(e));
-    }
-    fetchMemo();
+    getFirebaseDb().then((database) => {
+      const memoRef = ref(database, 'mirror/memo');
+      onValue(memoRef, (snapshot) => {
+        setMemoData(snapshot.val());
+      });
+    }).catch((error) => {
+      console.error(error.message);
+    });
+  }, [setMemoData])
 
-    const fetchMemoIntervalId = window.setInterval(fetchMemo, updateInterval);
-
-    return () => window.clearInterval(fetchMemoIntervalId);
-  }, [url, updateInterval]);
-
-  if (isInPrivacyMode) return <></>;
-  if (!memoData) return <></>;
-  if ('error' in memoData) {
-    console.error(memoData.error);
-    return <></>;
-  }
-  return <pre className={styles.memo + " " + amaticSc.className}>{memoData.memo}</pre>;
+  if (isInPrivacyMode || !memoData) return <></>;
+  return <pre className={styles.memo + " " + amaticSc.className}>{memoData}</pre>;
 }
