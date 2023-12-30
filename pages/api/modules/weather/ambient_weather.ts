@@ -17,6 +17,7 @@ export async function getAmbientWeatherData(
   }
   const sensorData = data[0];
   return {
+    dailyRainInches: sensorData.dailyrainin,
     temperature: Math.round(sensorData.feelsLike!),
     windSpeed: Math.round(sensorData.windspeedmph!),
     uvIndex: Math.round(sensorData.uv!),
@@ -35,7 +36,8 @@ function isAmbientWeatherDataValid(data: AmbientWeatherApi.DeviceData[]): boolea
   if (typeof d.feelsLike != 'number' ||
     typeof d.windspeedmph != 'number' ||
     typeof d.dateutc != 'number' ||
-    typeof d.uv != 'number') {
+    typeof d.uv != 'number' ||
+    typeof d.dailyrainin != 'number') {
     return false;
   }
 

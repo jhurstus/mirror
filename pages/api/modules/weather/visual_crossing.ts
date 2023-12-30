@@ -70,6 +70,7 @@ function visualCrossingResponseToWeatherData(data: VisualCrossingResponse): Weat
   const uvIndex = data.currentConditions.uvindex;
   const low = Math.round(today.feelslikemin);
   const high = Math.round(today.feelslikemax);
+  const dailyRainInches = today.precip;
 
   // Hourly forecasts for the next 24 hours.
   let hourly = data.days[0].hours.slice(new Date().getHours());
@@ -127,6 +128,7 @@ function visualCrossingResponseToWeatherData(data: VisualCrossingResponse): Weat
     sunset,
     shortForecast,
     alerts,
+    dailyRainInches,
   };
 }
 

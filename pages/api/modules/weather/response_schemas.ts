@@ -173,6 +173,7 @@ export interface Weather {
   windSpeed: number,
   cloudCover: number,
   uvIndex: number,
+  dailyRainInches: number,
   low: number,
   high: number,
   precipProbability: number,
