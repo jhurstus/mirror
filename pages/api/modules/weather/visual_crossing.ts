@@ -67,7 +67,6 @@ function visualCrossingResponseToWeatherData(data: VisualCrossingResponse): Weat
     summary = summary.replace(/\.$/, '');
   }
   const windSpeed = Math.round(data.currentConditions.windspeed);
-  const cloudCover = Math.round(data.currentConditions.cloudcover);
   const uvIndex = data.currentConditions.uvindex;
   const low = Math.round(today.feelslikemin);
   const high = Math.round(today.feelslikemax);
@@ -75,6 +74,11 @@ function visualCrossingResponseToWeatherData(data: VisualCrossingResponse): Weat
   // Hourly forecasts for the next 24 hours.
   let hourly = data.days[0].hours.slice(new Date().getHours());
   hourly = hourly.concat(data.days[1].hours.slice(0, 24 - hourly.length));
+
+  // Use forecasted cloud cover for the next hour, as opposed to
+  // 'currentConditions' cloud cover.  The latter has proved to be wildly
+  // inaccurate, and only seems to ever report values of 0/25/50.
+  const cloudCover = Math.round(hourly[0].cloudcover);
 
   // Show max precipitation probability for the rest of the day (to 4am),
   // instead of instantaneous probability.  This is more useful for
