@@ -140,6 +140,14 @@ export default function Weather({
         {weather.aqi &&
           <span className={styles.aqiContainer + ' ' + styles['aqi' + weather.aqi.label]}><span className={styles.aqi}>AQI</span> {weather.aqi.aqi}</span>
         }
+
+        {weather.dailyRainInches >= 0.05 &&
+          <>
+            <span className={styles.dailyRain}><Image src="/modules/weather/icons/Cloud-Drizzle-Alt.svg" width="50" height="50" alt="rain inches" />
+              {weather.dailyRainInches.toFixed(2)}"
+            </span>
+          </>
+        }
       </div>
 
       <div className={styles.shortForecast}>

@@ -129,6 +129,17 @@
 .aqimoderate .aqi {
   border-color: #ebdb34;
 }
+.dailyRain {
+  position: relative;
+  margin-left: 55px;
+}
+.dailyRain > img {
+  position: absolute;
+  height: 50px;
+  width: 50px;
+  top: -14px;
+  left: -44px;
+}
 
 
 .shortForecast {
