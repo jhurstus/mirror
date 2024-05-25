@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import styles from './weather.module.css'
-import { Weather } from "@/pages/api/modules/weather/response_schemas";
+import type { Weather } from "@/pages/api/modules/weather/response_schemas";
 import { LatLng } from "@/pages/api/modules/weather/weather";
 import { useEffect, useState } from "react";
 
