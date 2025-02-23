@@ -1,4 +1,4 @@
-import { Weather, VisualCrossingResponse, VisualCrossingShortForecast } from "./response_schemas";
+import { Weather, VisualCrossingResponse, VisualCrossingShortForecast, PrecipitationInfo } from "./response_schemas";
 
 // Retrieves weather data from Visual Crossing.  Throws if data is missing or
 // invalid.
@@ -91,6 +91,16 @@ function visualCrossingResponseToWeatherData(data: VisualCrossingResponse): Weat
   }
   precipProbability = Math.round(100 * precipProbability);
 
+  // Precipitation amount and probabilities for precipitation infographic.
+  const precipitationInfo: PrecipitationInfo[] = hourly.map((hour) => {
+    return {
+      // Forecasted hourly rain in inches.
+      amount: hour.precip || 0.0,
+      // Probability of precipitation.
+      probability: hour.precipprob / 100.0,
+    };
+  });
+
   // sunrise/sunset times
   const sunrise = epochToTime(data.days[0].sunriseEpoch);
   const sunset = epochToTime(data.days[0].sunsetEpoch);
@@ -129,6 +139,7 @@ function visualCrossingResponseToWeatherData(data: VisualCrossingResponse): Weat
     shortForecast,
     alerts,
     dailyRainInches,
+    precipitationInfo,
   };
 }
 

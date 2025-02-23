@@ -37,7 +37,7 @@ export type AirQualityLabel =
 export interface AirQuality {
   aqi: number,
   label: AirQualityLabel,
-} 
+}
 
 // See https://www.visualcrossing.com/resources/documentation/weather-api/timeline-weather-api/
 // ... for further documentation.
@@ -167,6 +167,11 @@ export interface CurrentConditions {
   moonphase: number
 }
 
+export interface PrecipitationInfo {
+  amount: number,
+  probability: number,
+}
+
 export interface Weather {
   temperature: number,
   summary: string,
@@ -182,6 +187,8 @@ export interface Weather {
   shortForecast: VisualCrossingShortForecast[],
   alerts: string[],
   aqi?: AirQuality,
+  precipitationInfo: PrecipitationInfo[],
+  precipitationGraph?: string,
 }
 
 export interface VisualCrossingShortForecast {

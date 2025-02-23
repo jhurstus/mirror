@@ -5,6 +5,7 @@ import styles from './weather.module.css'
 import type { Weather } from "@/pages/api/modules/weather/response_schemas";
 import { LatLng } from "@/pages/api/modules/weather/weather";
 import { useEffect, useState } from "react";
+import { generatePrecipitationSVG } from "./precipitation_graph";
 
 export type WeatherProps = {
   // Visual Crossing API key.  A key can be obtained from
@@ -74,7 +75,9 @@ export default function Weather({
         .then((res) => res.json())
         .then((json) => {
           setLastUpdatedTimestamp(Date.now());
-          setWeather(json.weather as Weather);
+          const weather = json.weather as Weather;
+          weather.precipitationGraph = generatePrecipitationSVG(weather.precipitationInfo);
+          setWeather(weather);
         }).catch((e) => console.error(e));
     }
     fetchWeather();
@@ -121,7 +124,13 @@ export default function Weather({
         </div>
         <div>
           <span className={styles.icon}><Image src="/modules/weather/icons/Umbrella.svg" width="50" height="50" alt="rain" /></span>
-          {weather.precipProbability}%
+          {weather.precipProbability < 5 ?
+            (weather.precipProbability + '%') : 
+            <span className={styles.precipitationGraphContainer}>
+              &nbsp;
+              <div className={styles.precipitationGraph} dangerouslySetInnerHTML={{ __html: weather.precipitationGraph || "" }} />
+            </span>
+          }
         </div>
         <div>
           <span className={styles.icon}><Image src="/modules/weather/icons/Cloud.svg" width="50" height="50" alt="cloud cover" /></span>
