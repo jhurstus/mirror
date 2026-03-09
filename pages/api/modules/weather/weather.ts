@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { Weather } from './response_schemas';
 import getVisualCrossingWeatherData from './visual_crossing';
+import getTomorrowIOWeatherData from './tomorrow_io';
 import { getPurpleAirWeatherData } from './purple_air';
 import { getAmbientWeatherData } from './ambient_weather';
 
@@ -9,7 +10,12 @@ export type LatLng = [number, number];
 // Query parameters for this API.
 export type Params = {
   address: string;
-  visualCrossingApiKey: string;
+  // Weather provider selection - defaults to Tomorrow.io
+  weatherProvider?: 'tomorrow.io' | 'visual-crossing';
+  // Tomorrow.io API key
+  tomorrowIOApiKey?: string;
+  // Visual Crossing API key (legacy/fallback)
+  visualCrossingApiKey?: string;
   ambientWeatherApiKey?: string;
   ambientWeatherApplicationKey?: string;
   ambientWeatherDeviceMAC?: string;
@@ -34,8 +40,19 @@ export default async function handler(
   try {
     const params: Params = validateRequestParams(req);
 
-    const visualCrossingPromise = getVisualCrossingWeatherData(
-      params.address, params.visualCrossingApiKey, NETWORK_TIMEOUT);
+    // Determine which weather provider to use
+    const provider = params.weatherProvider || 'tomorrow.io';
+
+    let weatherPromise: Promise<Weather>;
+    if (provider === 'tomorrow.io' && params.tomorrowIOApiKey) {
+      weatherPromise = getTomorrowIOWeatherData(
+        params.address, params.tomorrowIOApiKey, NETWORK_TIMEOUT);
+    } else if (provider === 'visual-crossing' && params.visualCrossingApiKey) {
+      weatherPromise = getVisualCrossingWeatherData(
+        params.address, params.visualCrossingApiKey, NETWORK_TIMEOUT);
+    } else {
+      throw new Error('No valid weather provider configured. Provide either tomorrowIOApiKey or visualCrossingApiKey.');
+    }
 
     let ambientWeatherPromise;;
     if (params.ambientWeatherApiKey &&
@@ -57,16 +74,16 @@ export default async function handler(
         NETWORK_TIMEOUT);
     }
 
-    const [visualCrossing, ambientWeather, purpleAir] =
-      await Promise.allSettled([visualCrossingPromise, ambientWeatherPromise, purpleAirPromise]);
+    const [weatherResult, ambientWeather, purpleAir] =
+      await Promise.allSettled([weatherPromise, ambientWeatherPromise, purpleAirPromise]);
 
-    // The weather UI mostly consists of Visual Crossing data, so throw an error
+    // The weather UI mostly consists of weather provider data, so throw an error
     // if it's unavailable.
-    if (visualCrossing.status != 'fulfilled') {
-      throw visualCrossing.reason;
+    if (weatherResult.status != 'fulfilled') {
+      throw weatherResult.reason;
     }
     const resp: Response = {
-      weather: visualCrossing.value,
+      weather: weatherResult.value,
     };
 
     if (ambientWeather.status == 'fulfilled' && ambientWeather.value) {
@@ -94,13 +111,26 @@ function validateRequestParams(req: NextApiRequest): Params {
   if (typeof req.query['address'] != 'string') {
     throw new Error('missing required parameter "address"');
   }
-  if (typeof req.query['visualCrossingApiKey'] != 'string') {
-    throw new Error('missing required parameter "visualCrossingApiKey"');
-  }
+
   const params: Params = {
     address: req.query['address'],
-    visualCrossingApiKey: req.query['visualCrossingApiKey'],
   };
+
+  // Weather provider configuration
+  if (typeof req.query['weatherProvider'] == 'string') {
+    params.weatherProvider = req.query['weatherProvider'] as 'tomorrow.io' | 'visual-crossing';
+  }
+  if (typeof req.query['tomorrowIOApiKey'] == 'string') {
+    params.tomorrowIOApiKey = req.query['tomorrowIOApiKey'];
+  }
+  if (typeof req.query['visualCrossingApiKey'] == 'string') {
+    params.visualCrossingApiKey = req.query['visualCrossingApiKey'];
+  }
+
+  // Validate at least one weather provider key is present
+  if (!params.tomorrowIOApiKey && !params.visualCrossingApiKey) {
+    throw new Error('missing required parameter: either "tomorrowIOApiKey" or "visualCrossingApiKey"');
+  }
 
   const ambientWeatherParams = [
     'ambientWeatherApiKey',

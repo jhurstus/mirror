@@ -8,9 +8,13 @@ import { useEffect, useState } from "react";
 import { generatePrecipitationSVG } from "./precipitation_graph";
 
 export type WeatherProps = {
-  // Visual Crossing API key.  A key can be obtained from
+  // Weather provider to use (defaults to 'tomorrow.io')
+  weatherProvider?: 'tomorrow.io' | 'visual-crossing';
+  // Tomorrow.io API key. A key can be obtained from https://www.tomorrow.io/
+  tomorrowIOApiKey?: string;
+  // Visual Crossing API key (legacy/fallback). A key can be obtained from
   // https://www.visualcrossing.com/
-  visualCrossingApiKey: string;
+  visualCrossingApiKey?: string;
   // Address (or lat,lng) for which weather data should be displayed.
   address: string;
   // Ambient Weather API and application key.  Falls back to Visual Crossing
@@ -41,6 +45,8 @@ export type WeatherProps = {
 type Nullable<T> = T | null;
 
 export default function Weather({
+  weatherProvider = 'tomorrow.io',
+  tomorrowIOApiKey,
   visualCrossingApiKey,
   address,
   ambientWeatherApiKey,
@@ -58,8 +64,15 @@ export default function Weather({
   useEffect(() => {
     function fetchWeather() {
       const url = new URL(window.location.origin + '/api/modules/weather/weather');
-      url.searchParams.append('visualCrossingApiKey', visualCrossingApiKey);
       url.searchParams.append('address', address);
+      url.searchParams.append('weatherProvider', weatherProvider);
+
+      if (tomorrowIOApiKey) {
+        url.searchParams.append('tomorrowIOApiKey', tomorrowIOApiKey);
+      }
+      if (visualCrossingApiKey) {
+        url.searchParams.append('visualCrossingApiKey', visualCrossingApiKey);
+      }
       if (ambientWeatherApiKey && ambientWeatherApplicationKey && ambientWeatherDeviceMAC) {
         url.searchParams.append('ambientWeatherApiKey', ambientWeatherApiKey);
         url.searchParams.append('ambientWeatherApplicationKey', ambientWeatherApplicationKey);
@@ -85,6 +98,8 @@ export default function Weather({
     const fetchWeatherIntervalId = window.setInterval(fetchWeather, updateInterval);
     return () => window.clearInterval(fetchWeatherIntervalId);
   }, [
+    weatherProvider,
+    tomorrowIOApiKey,
     visualCrossingApiKey,
     address,
     ambientWeatherApiKey,
@@ -125,7 +140,7 @@ export default function Weather({
         <div>
           <span className={styles.icon}><Image src="/modules/weather/icons/Umbrella.svg" width="50" height="50" alt="rain" /></span>
           {weather.precipProbability < 5 ?
-            (weather.precipProbability + '%') : 
+            (weather.precipProbability + '%') :
             <span className={styles.precipitationGraphContainer}>
               &nbsp;
               <div className={styles.precipitationGraph} dangerouslySetInnerHTML={{ __html: weather.precipitationGraph || "" }} />

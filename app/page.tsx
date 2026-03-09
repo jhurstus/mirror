@@ -31,7 +31,9 @@ export default function Home() {
           homeCity='San
            Francisco' />
         <Weather
-          visualCrossingApiKey={process.env.NEXT_PUBLIC_WEATHER_VISUAL_CROSSING_API_KEY!}
+          weatherProvider="tomorrow.io"
+          tomorrowIOApiKey={process.env.NEXT_PUBLIC_WEATHER_TOMORROW_IO_API_KEY!}
+          visualCrossingApiKey={process.env.NEXT_PUBLIC_WEATHER_VISUAL_CROSSING_API_KEY}
           address={process.env.NEXT_PUBLIC_WEATHER_ADDRESS!}
           ambientWeatherApiKey={process.env.NEXT_PUBLIC_WEATHER_AMBIENT_WEATHER_API_KEY!}
           ambientWeatherApplicationKey={process.env.NEXT_PUBLIC_WEATHER_AMBIENT_WEATHER_APPLICATION_KEY!}
