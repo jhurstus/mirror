@@ -72,9 +72,7 @@ export default function Calendar(props: CalendarProps) {
   //   determination with the isEventAllDay function below.
   const eventDataTransform: EventInputTransformer = ({ title, start, end }) => {
     function transformStartEndTime(timeStr: string): string {
-      return moment(timeStr)
-        .add(new Date().getTimezoneOffset(), 'minutes')
-        .format('YYYY-MM-DDTHH:mm:ss');
+      return moment(timeStr).utc().format('YYYY-MM-DDTHH:mm:ss');
     }
 
     return {
