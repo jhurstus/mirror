@@ -90,6 +90,7 @@ export default async function handler(
       // Override forecast current condition data with more precise local
       // weather station data.
       Object.assign(resp.weather, weatherUnderground.value);
+      resp.weather.hasLocalWeatherData = true;
     }
 
     fixInconsistentWeatherProperties(resp.weather);

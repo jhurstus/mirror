@@ -189,6 +189,7 @@ export interface Weather {
   aqi?: AirQuality,
   precipitationInfo: PrecipitationInfo[],
   precipitationGraph?: string,
+  hasLocalWeatherData?: boolean,
 }
 
 export interface VisualCrossingShortForecast {

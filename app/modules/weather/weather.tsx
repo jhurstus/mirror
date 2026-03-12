@@ -112,6 +112,10 @@ export default function Weather({
 
   return (
     <div className={styles.layout}>
+      {/* Show a little dingus if local weather data is missing, so I can be aprised. */}
+      {!weather.hasLocalWeatherData &&
+        <div style={{ position: 'absolute', top: 0, right: 0, width: 3, height: 3, background: '#aaa' }} />
+      }
       <div className={styles.summary}>{weather.summary}</div>
 
       <div className={styles.currentTemperatures}>
