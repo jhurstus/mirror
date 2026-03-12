@@ -3,7 +3,7 @@ import { Weather } from './response_schemas';
 import getVisualCrossingWeatherData from './visual_crossing';
 import getTomorrowIOWeatherData from './tomorrow_io';
 import { getPurpleAirWeatherData } from './purple_air';
-import { getAmbientWeatherData } from './ambient_weather';
+import { getWeatherUndergroundData } from './weather_underground';
 
 export type LatLng = [number, number];
 
@@ -16,9 +16,10 @@ export type Params = {
   tomorrowIOApiKey?: string;
   // Visual Crossing API key (legacy/fallback)
   visualCrossingApiKey?: string;
-  ambientWeatherApiKey?: string;
-  ambientWeatherApplicationKey?: string;
-  ambientWeatherDeviceMAC?: string;
+  // Weather Underground Personal Weather Station ("PWS") API key
+  weatherUndergroundApiKey?: string;
+  // Weather Underground personal weather station ID from which to pull data
+  weatherUndergroundStationId?: string;
   purpleAirReadKey?: string;
   purpleAirNorthwestLatLng?: LatLng;
   purpleAirSoutheastLatLng?: LatLng;
@@ -54,13 +55,12 @@ export default async function handler(
       throw new Error('No valid weather provider configured. Provide either tomorrowIOApiKey or visualCrossingApiKey.');
     }
 
-    let ambientWeatherPromise;;
-    if (params.ambientWeatherApiKey &&
-      params.ambientWeatherApplicationKey &&
-      params.ambientWeatherDeviceMAC) {
-      ambientWeatherPromise = getAmbientWeatherData(
-        params.ambientWeatherApiKey,
-        params.ambientWeatherApplicationKey, params.ambientWeatherDeviceMAC);
+    let weatherUndergroundPromise;
+    if (params.weatherUndergroundApiKey &&
+      params.weatherUndergroundStationId) {
+      weatherUndergroundPromise = getWeatherUndergroundData(
+        params.weatherUndergroundApiKey,
+        params.weatherUndergroundStationId);
     }
 
     let purpleAirPromise;
@@ -74,8 +74,8 @@ export default async function handler(
         NETWORK_TIMEOUT);
     }
 
-    const [weatherResult, ambientWeather, purpleAir] =
-      await Promise.allSettled([weatherPromise, ambientWeatherPromise, purpleAirPromise]);
+    const [weatherResult, weatherUnderground, purpleAir] =
+      await Promise.allSettled([weatherPromise, weatherUndergroundPromise, purpleAirPromise]);
 
     // The weather UI mostly consists of weather provider data, so throw an error
     // if it's unavailable.
@@ -86,10 +86,10 @@ export default async function handler(
       weather: weatherResult.value,
     };
 
-    if (ambientWeather.status == 'fulfilled' && ambientWeather.value) {
-      // Override Visual Crossing current condition data with (presumably...)
-      // more precise local weather station data.
-      Object.assign(resp.weather, ambientWeather.value);
+    if (weatherUnderground.status == 'fulfilled' && weatherUnderground.value) {
+      // Override forecast current condition data with more precise local
+      // weather station data.
+      Object.assign(resp.weather, weatherUnderground.value);
     }
 
     fixInconsistentWeatherProperties(resp.weather);
@@ -132,16 +132,11 @@ function validateRequestParams(req: NextApiRequest): Params {
     throw new Error('missing required parameter: either "tomorrowIOApiKey" or "visualCrossingApiKey"');
   }
 
-  const ambientWeatherParams = [
-    'ambientWeatherApiKey',
-    'ambientWeatherApplicationKey',
-    'ambientWeatherDeviceMAC'
-  ];
-  if (ambientWeatherParams.reduce(
-    (prev, curr) => { return prev && typeof req.query[curr] == 'string' }, true)) {
-    params.ambientWeatherApiKey = req.query['ambientWeatherApiKey'] as string;
-    params.ambientWeatherApplicationKey = req.query['ambientWeatherApplicationKey'] as string;
-    params.ambientWeatherDeviceMAC = req.query['ambientWeatherDeviceMAC'] as string;
+  if (typeof req.query['weatherUndergroundApiKey'] == 'string') {
+    params.weatherUndergroundApiKey = req.query['weatherUndergroundApiKey'];
+  }
+  if (typeof req.query['weatherUndergroundStationId'] == 'string') {
+    params.weatherUndergroundStationId = req.query['weatherUndergroundStationId'];
   }
 
   if (typeof req.query['purpleAirReadKey'] == 'string') {

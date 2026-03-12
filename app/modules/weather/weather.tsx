@@ -17,13 +17,10 @@ export type WeatherProps = {
   visualCrossingApiKey?: string;
   // Address (or lat,lng) for which weather data should be displayed.
   address: string;
-  // Ambient Weather API and application key.  Falls back to Visual Crossing
-  // data if unavailable. Keys can be obtained from
-  // https://dashboard.ambientweather.net/account
-  ambientWeatherApiKey?: string;
-  ambientWeatherApplicationKey?: string;
-  // Ambient Weather device MAC (identifier) from which to pull data.
-  ambientWeatherDeviceMAC?: string;
+  // Weather Underground API key and station ID for hyper-local current
+  // conditions.  Falls back to forecast provider data if unavailable.
+  weatherUndergroundApiKey?: string;
+  weatherUndergroundStationId?: string;
   // Time in milliseconds between weather updates.  Visual Crossing provides
   // 1000 requests per day free.  To stay under that quota, choose a config
   // value of at least ((24*60*60*1000)/1000)==86400.
@@ -49,9 +46,8 @@ export default function Weather({
   tomorrowIOApiKey,
   visualCrossingApiKey,
   address,
-  ambientWeatherApiKey,
-  ambientWeatherApplicationKey,
-  ambientWeatherDeviceMAC,
+  weatherUndergroundApiKey,
+  weatherUndergroundStationId,
   updateInterval = 1000 * 60 * 5, // 5 minutes
   dataAgeLimit = 1000 * 60 * 60 * 1, // 1 hour
   purpleAirReadKey,
@@ -73,10 +69,9 @@ export default function Weather({
       if (visualCrossingApiKey) {
         url.searchParams.append('visualCrossingApiKey', visualCrossingApiKey);
       }
-      if (ambientWeatherApiKey && ambientWeatherApplicationKey && ambientWeatherDeviceMAC) {
-        url.searchParams.append('ambientWeatherApiKey', ambientWeatherApiKey);
-        url.searchParams.append('ambientWeatherApplicationKey', ambientWeatherApplicationKey);
-        url.searchParams.append('ambientWeatherDeviceMAC', ambientWeatherDeviceMAC);
+      if (weatherUndergroundApiKey && weatherUndergroundStationId) {
+        url.searchParams.append('weatherUndergroundApiKey', weatherUndergroundApiKey);
+        url.searchParams.append('weatherUndergroundStationId', weatherUndergroundStationId);
       }
       if (purpleAirReadKey && purpleAirNorthwestLatLng && purpleAirSoutheastLatLng) {
         url.searchParams.append('purpleAirReadKey', purpleAirReadKey);
@@ -102,9 +97,8 @@ export default function Weather({
     tomorrowIOApiKey,
     visualCrossingApiKey,
     address,
-    ambientWeatherApiKey,
-    ambientWeatherApplicationKey,
-    ambientWeatherDeviceMAC,
+    weatherUndergroundApiKey,
+    weatherUndergroundStationId,
     updateInterval,
     dataAgeLimit,
     purpleAirReadKey,

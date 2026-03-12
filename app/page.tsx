@@ -35,9 +35,8 @@ export default function Home() {
           tomorrowIOApiKey={process.env.NEXT_PUBLIC_WEATHER_TOMORROW_IO_API_KEY!}
           visualCrossingApiKey={process.env.NEXT_PUBLIC_WEATHER_VISUAL_CROSSING_API_KEY}
           address={process.env.NEXT_PUBLIC_WEATHER_ADDRESS!}
-          ambientWeatherApiKey={process.env.NEXT_PUBLIC_WEATHER_AMBIENT_WEATHER_API_KEY!}
-          ambientWeatherApplicationKey={process.env.NEXT_PUBLIC_WEATHER_AMBIENT_WEATHER_APPLICATION_KEY!}
-          ambientWeatherDeviceMAC={process.env.NEXT_PUBLIC_WEATHER_AMBIENT_WEATHER_DEVICE_MAC!}
+          weatherUndergroundApiKey={process.env.NEXT_PUBLIC_WEATHER_UNDERGROUND_API_KEY!}
+          weatherUndergroundStationId={process.env.NEXT_PUBLIC_WEATHER_UNDERGROUND_STATION_ID!}
           purpleAirReadKey={process.env.NEXT_PUBLIC_WEATHER_PURPLE_AIR_READ_KEY!}
           purpleAirNorthwestLatLng={JSON.parse(process.env.NEXT_PUBLIC_WEATHER_PURPLE_AIR_NORTHWEST_LATLNG!)}
           purpleAirSoutheastLatLng={JSON.parse(process.env.NEXT_PUBLIC_WEATHER_PURPLE_AIR_SOUTHEAST_LATLNG!)} />
