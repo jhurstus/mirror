@@ -1,11 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { Weather } from './response_schemas';
-import getVisualCrossingWeatherData from './visual_crossing';
-import getTomorrowIOWeatherData from './tomorrow_io';
-import { getPurpleAirWeatherData } from './purple_air';
-import { getWeatherUndergroundData } from './weather_underground';
-
-export type LatLng = [number, number];
+import { Weather, LatLng } from '@/app/lib/weather/response_schemas';
+import getVisualCrossingWeatherData from '@/app/lib/weather/visual_crossing';
+import getTomorrowIOWeatherData from '@/app/lib/weather/tomorrow_io';
+import { getPurpleAirWeatherData } from '@/app/lib/weather/purple_air';
+import { getWeatherUndergroundData } from '@/app/lib/weather/weather_underground';
 
 // Query parameters for this API.
 export type Params = {

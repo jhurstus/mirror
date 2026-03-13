@@ -2,8 +2,7 @@
 
 import Image from 'next/image';
 import styles from './weather.module.css'
-import type { Weather } from "@/pages/api/modules/weather/response_schemas";
-import { LatLng } from "@/pages/api/modules/weather/weather";
+import type { Weather, LatLng } from "@/app/lib/weather/response_schemas";
 import { useEffect, useState } from "react";
 import { generatePrecipitationSVG } from "./precipitation_graph";
 

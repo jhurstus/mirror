@@ -1,5 +1,4 @@
-import { AirQuality, AirQualityLabel, PurpleAirResponse } from "./response_schemas";
-import { LatLng } from "./weather";
+import { AirQuality, AirQualityLabel, PurpleAirResponse, LatLng } from "./response_schemas";
 
 // Retrieves purple air sensor data within the given bounding box.
 export async function getPurpleAirWeatherData(

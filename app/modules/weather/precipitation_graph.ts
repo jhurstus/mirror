@@ -1,4 +1,4 @@
-import type { PrecipitationInfo } from "@/pages/api/modules/weather/response_schemas";
+import type { PrecipitationInfo } from "@/app/lib/weather/response_schemas";
 
 export function generatePrecipitationSVG(data: PrecipitationInfo[]): string {
   const width = 25;

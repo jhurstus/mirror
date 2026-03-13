@@ -1,3 +1,5 @@
+export type LatLng = [number, number];
+
 // Generated with https://transform.tools/json-to-typescript
 
 // See https://api.purpleair.com/#api-sensors-get-sensors-data 
