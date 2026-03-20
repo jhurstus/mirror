@@ -213,7 +213,7 @@ function tomorrowIOResponseToWeatherData(data: TomorrowIOResponse): Weather {
       low: Math.round(day.values.temperatureApparentMin),
       high: Math.round(day.values.temperatureApparentMax),
       icon: getIconFromWeatherCode(day.values.weatherCode),
-      day: date.toDateString().split(' ')[0],
+      day: date.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/Los_Angeles' }),
     });
   }
 
