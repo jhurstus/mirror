@@ -204,16 +204,32 @@ function tomorrowIOResponseToWeatherData(data: TomorrowIOResponse): Weather {
   const sunrise = formatTime(today.sunriseTime || '');
   const sunset = formatTime(today.sunsetTime || '');
 
-  // Short forecast for next 2 days
+  // Short forecast for tomorrow and the day after tomorrow in Pacific time.
+  // Daily entries use 6am-6am boundaries, so before 6am Pacific, daily[0] is
+  // "yesterday".  Find tomorrow by comparing dates rather than assuming an index.
+  const todayPacific = new Date().toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles' });
+  const todayDate = new Date(todayPacific);
+  const tomorrowDate = new Date(todayDate);
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrowStr = tomorrowDate.toLocaleDateString('en-US');
+
   const shortForecast: VisualCrossingShortForecast[] = [];
-  for (let i = 1; i < Math.min(3, daily.length); i++) {
-    const day = daily[i];
-    const date = new Date(day.time);
+  let found = false;
+  for (const entry of daily) {
+    const entryDateStr = new Date(entry.time).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles' });
+    if (!found) {
+      if (entryDateStr === tomorrowStr) {
+        found = true;
+      } else {
+        continue;
+      }
+    }
+    if (shortForecast.length >= 2) break;
     shortForecast.push({
-      low: Math.round(day.values.temperatureApparentMin),
-      high: Math.round(day.values.temperatureApparentMax),
-      icon: getIconFromWeatherCode(day.values.weatherCode),
-      day: date.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/Los_Angeles' }),
+      low: Math.round(entry.values.temperatureApparentMin),
+      high: Math.round(entry.values.temperatureApparentMax),
+      icon: getIconFromWeatherCode(entry.values.weatherCode),
+      day: new Date(entry.time).toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/Los_Angeles' }),
     });
   }
 
