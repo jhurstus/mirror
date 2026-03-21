@@ -149,6 +149,20 @@ function isForecastDataValid(data: TomorrowIOResponse): boolean {
   return true;
 }
 
+// Finds the daily entry corresponding to today + dayOffset in Pacific time.
+// dayOffset=0 is today, dayOffset=1 is tomorrow, etc.
+function findDailyEntry(daily: TomorrowIODailyEntry[], dayOffset: number): TomorrowIODailyEntry | undefined {
+  const todayPacific = new Date().toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles' });
+  const targetDate = new Date(todayPacific);
+  targetDate.setDate(targetDate.getDate() + dayOffset);
+  const targetStr = targetDate.toLocaleDateString('en-US');
+
+  return daily.find((entry) => {
+    const entryStr = new Date(entry.time).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles' });
+    return entryStr === targetStr;
+  });
+}
+
 // Converts Tomorrow.io service response to data needed for display
 function tomorrowIOResponseToWeatherData(data: TomorrowIOResponse): Weather {
   const hourly = data.timelines.hourly!;
@@ -162,7 +176,7 @@ function tomorrowIOResponseToWeatherData(data: TomorrowIOResponse): Weather {
   const uvIndex = current.uvIndex;
 
   // Today's daily forecast
-  const today = daily[0].values;
+  const today = findDailyEntry(daily, 0)!.values;
   const low = Math.round(today.temperatureApparentMin);
   const high = Math.round(today.temperatureApparentMax);
 
@@ -204,27 +218,11 @@ function tomorrowIOResponseToWeatherData(data: TomorrowIOResponse): Weather {
   const sunrise = formatTime(today.sunriseTime || '');
   const sunset = formatTime(today.sunsetTime || '');
 
-  // Short forecast for tomorrow and the day after tomorrow in Pacific time.
-  // Daily entries use 6am-6am boundaries, so before 6am Pacific, daily[0] is
-  // "yesterday".  Find tomorrow by comparing dates rather than assuming an index.
-  const todayPacific = new Date().toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles' });
-  const todayDate = new Date(todayPacific);
-  const tomorrowDate = new Date(todayDate);
-  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-  const tomorrowStr = tomorrowDate.toLocaleDateString('en-US');
-
+  // Short forecast for tomorrow and the day after tomorrow
   const shortForecast: VisualCrossingShortForecast[] = [];
-  let found = false;
-  for (const entry of daily) {
-    const entryDateStr = new Date(entry.time).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles' });
-    if (!found) {
-      if (entryDateStr === tomorrowStr) {
-        found = true;
-      } else {
-        continue;
-      }
-    }
-    if (shortForecast.length >= 2) break;
+  for (let offset = 1; offset <= 2; offset++) {
+    const entry = findDailyEntry(daily, offset);
+    if (!entry) break;
     shortForecast.push({
       low: Math.round(entry.values.temperatureApparentMin),
       high: Math.round(entry.values.temperatureApparentMax),
