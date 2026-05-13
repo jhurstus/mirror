@@ -20,6 +20,8 @@ export type CalendarConfigs = {
   icsUrl: string;
   // Whether to show events from this calendar in italics.
   italic?: boolean;
+  // If set, replaces the displayed title of every event from this calendar.
+  titleOverride?: string;
 };
 
 interface CalendarData {
@@ -70,18 +72,19 @@ export default function Calendar(props: CalendarProps) {
   //   FullDay events are in UTC time and thus straddle midnight in local time.
   //   Consequently, 'allDay' properties are incorrect and we make that
   //   determination with the isEventAllDay function below.
-  const eventDataTransform: EventInputTransformer = ({ title, start, end }) => {
-    function transformStartEndTime(timeStr: string): string {
-      return moment(timeStr).utc().format('YYYY-MM-DDTHH:mm:ss');
-    }
+  const makeEventDataTransform = (titleOverride?: string): EventInputTransformer =>
+    ({ title, start, end }) => {
+      function transformStartEndTime(timeStr: string): string {
+        return moment(timeStr).utc().format('YYYY-MM-DDTHH:mm:ss');
+      }
 
-    return {
-      title: title,
-      start: transformStartEndTime(start as string),
-      end: transformStartEndTime(end as string),
-      allDay: false,
+      return {
+        title: titleOverride !== undefined ? titleOverride : title,
+        start: transformStartEndTime(start as string),
+        end: transformStartEndTime(end as string),
+        allDay: false,
+      };
     };
-  };
 
   return (
     // Google Calendar stores times as 'UTC', but actually adjusts for local
@@ -96,7 +99,6 @@ export default function Calendar(props: CalendarProps) {
         ref={calendarRef}
         timeZone='local'
         plugins={[iCalendarPlugin, customViewPlugin]}
-        eventDataTransform={eventDataTransform}
         initialView="custom"
         initialDate={moment(new Date()).subtract(1, 'day').toDate()}
         headerToolbar={false}
@@ -109,6 +111,7 @@ export default function Calendar(props: CalendarProps) {
               url: `/api/modules/calendar/calendar?url=${encodeURIComponent(c.icsUrl)}`,
               format: 'ics',
               classNames: c.italic ? ['italic'] : [],
+              eventDataTransform: makeEventDataTransform(c.titleOverride),
             }
           })
         }
