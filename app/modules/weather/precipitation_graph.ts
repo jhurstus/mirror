@@ -1,20 +1,6 @@
 import type { PrecipitationInfo } from "@/app/lib/weather/response_schemas";
 
 export function generatePrecipitationSVG(data: PrecipitationInfo[]): string {
-  data = [
-    { amount: 0.4, probability: 1.0 },
-    { amount: 0.05, probability: 0.15 },
-    { amount: 0.1, probability: 0.4 },
-    { amount: 0.0, probability: 0.0 },
-    { amount: 0.2, probability: 0.65 },
-    { amount: 0.35, probability: 0.85 },
-    { amount: 0.5, probability: 1.0 },
-    { amount: 0.25, probability: 0.75 },
-    { amount: 0.0, probability: 0.0 },
-    { amount: 0.15, probability: 0.5 },
-    { amount: 0.08, probability: 0.25 },
-    { amount: 0.0, probability: 0.0 },
-  ];
   const width = 25;
   const height = width;
   const centerX = width / 2;
