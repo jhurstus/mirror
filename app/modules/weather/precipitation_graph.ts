@@ -87,7 +87,7 @@ export function generatePrecipitationSVG(data: PrecipitationInfo[]): string {
   const hourHandWhite = `<line x1="${centerX}" y1="${centerY}" x2="${handEnd.x.toFixed(2)}" y2="${handEnd.y.toFixed(2)}" ` +
                         `stroke="white" stroke-width="1" stroke-linecap="round" />`;
 
-  const circleElement = `<circle cx="${centerX}" cy="${centerY}" r="${maxRadius}" stroke="white" stroke-width="1" fill="none" />`;
+  const circleElement = `<circle cx="${centerX}" cy="${centerY}" r="${maxRadius - 0.5}" stroke="white" stroke-width="1" fill="none" />`;
 
   const svg = `
 <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
