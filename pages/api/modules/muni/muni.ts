@@ -1,10 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import JSDOM from 'jsdom'
 
 // A transit stop.
 export type Stop = {
   routeName: string;
-  direction: string;
   stopId: string;
 };
 export type Stops = Stop[];
@@ -14,7 +12,6 @@ function isStops(stops: any): stops is Stops {
   if (!(stops instanceof Array)) return false;
   for (const s of stops) {
     if (typeof s.routeName != 'string' ||
-      typeof s.direction != 'string' ||
       typeof s.stopId != 'string') {
       return false;
     }
@@ -24,7 +21,6 @@ function isStops(stops: any): stops is Stops {
 
 // Query parameters for this API.
 export type Params = {
-  key: string;
   agency: string;
   stops: Stops;
 };
@@ -41,14 +37,24 @@ export type Prediction = {
 export type Success = Prediction[];
 export type Response = Error | Success;
 
+// Relevant subset of the UmoIQ predictions response JSON.  See:
+// https://api.prd-1.iq.live.umoiq.com/v2.0/riders/agencies/<agency>/nstops/<route>:<stopId>/predictions
+type UmoIQPredictionValue = {
+  // Epoch milliseconds of the predicted arrival.
+  timestamp: number;
+};
+type UmoIQStopPrediction = {
+  values: UmoIQPredictionValue[];
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Response>
 ) {
   try {
-    const { key, agency, stops } = validateRequestParams(req);
-    const stopPredictionXMLs = await get511StopPredictions(key, agency, stops);
-    res.status(200).json(getStopPredictionJson(stops, stopPredictionXMLs));
+    const { agency, stops } = validateRequestParams(req);
+    const stopPredictions = await getUmoIQStopPredictions(agency, stops);
+    res.status(200).json(getStopPredictionJson(stops, stopPredictions));
   } catch (e) {
     res.status(500).json({ error: e instanceof Error ? e.message : String(e) });
   }
@@ -56,10 +62,6 @@ export default async function handler(
 
 // Validates request params.  Throws an Error if any param is invalid.
 function validateRequestParams(req: NextApiRequest): Params {
-  if (typeof req.query['key'] != 'string') {
-    throw new Error('missing required parameter "key"');
-  }
-
   if (typeof req.query['agency'] != 'string') {
     throw new Error('missing required parameter "agency"');
   }
@@ -79,102 +81,80 @@ function validateRequestParams(req: NextApiRequest): Params {
   }
 
   return {
-    key: req.query['key'],
     agency: req.query['agency'],
     stops: stops,
   };
 }
 
-// Fetches transit stop arrival prediction times from 511.org service.
-// Fulfills with an array of XML text responses from 511, or throws with any
-// network or service error.
-async function get511StopPredictions(
-  key: string,
+// Fetches transit stop arrival predictions from the UmoIQ service.  Issues one
+// request per stop and fulfills with the parsed JSON responses (one per stop,
+// in the same order as 'stops'), or throws with any network or service error.
+async function getUmoIQStopPredictions(
   agency: string,
   stops: Stops,
-  timeout: number = 15 * 1000): Promise<string[]> {
-  const urlPrefix = `https://api.511.org/transit/StopMonitoring?api_key=${key}&format=xml&agency=${agency}`;
+  timeout: number = 15 * 1000): Promise<UmoIQStopPrediction[][]> {
+  const urlPrefix =
+    `https://api.prd-1.iq.live.umoiq.com/v2.0/riders/agencies/${agency}/nstops`;
 
   const abortController = new AbortController();
   const timeoutId = setTimeout(() => {
     abortController.abort();
   }, timeout);
 
-  let fetchResponseTexts: string[];
   try {
-    fetchResponseTexts = await Promise.all(stops.map((stop) => {
+    return await Promise.all(stops.map((stop) => {
+      // An 'nstop' identifies a route+stop pair, e.g. 'J:3995'.
+      const nstop = `${stop.routeName}:${stop.stopId}`;
       return fetch(
-        `${urlPrefix}&stopcode=${stop.stopId}`,
+        `${urlPrefix}/${nstop}/predictions`,
         { signal: abortController.signal })
-        .then((r) => r.text());
+        .then((r) => {
+          if (!r.ok) {
+            throw new Error(
+              `umoiq predictions request for "${nstop}" failed with status ${r.status}`);
+          }
+          return r.json() as Promise<UmoIQStopPrediction[]>;
+        });
     }));
   } finally {
     clearTimeout(timeoutId);
   }
-
-  return fetchResponseTexts;
 }
 
-// Converts 511 stop prediction XML to API response Success JSON format.
-// Throws if there is missing or invalid data in the 511 XML.
-function getStopPredictionJson(stops: Stops, xmlResponses: string[]): Success {
-  if (stops.length != xmlResponses.length) {
-    throw new Error('received unexpected number of prediction responses from 511');
+// Converts UmoIQ stop prediction JSON to API response Success JSON format.
+// Throws if there is missing or invalid data in the UmoIQ response.
+function getStopPredictionJson(
+  stops: Stops, responses: UmoIQStopPrediction[][]): Success {
+  if (stops.length != responses.length) {
+    throw new Error('received unexpected number of prediction responses from umoiq');
   }
 
-  const xmlDocs = xmlResponses.map((x) => new JSDOM.JSDOM(x));
   // Return a success status if at least one of the requested stops has
   // prediction data, so that at least that stop can be updated.  If none of the
-  // requested stops have updated prediction data though, consider that a
-  // service error.
-  const hasSomePredictions = xmlDocs.some((doc) => {
-    const status = doc.window.document.querySelector('servicedelivery > status');
-    return status && status.textContent == 'true';
-  });
+  // requested stops have prediction data though, consider that a service error.
+  const hasSomePredictions = responses.some((stopPredictions) =>
+    stopPredictions.some((p) => p.values && p.values.length > 0));
   if (!hasSomePredictions) {
     throw new Error('no muni predictions returned a valid status');
   }
 
-  // TODO -- other things to ideally check here:
-  // - configured line+direction are valid for the requested stop
-  // - prediction times in valid format and sensible
-
   const predictions: Prediction[] = [];
   for (let i = 0; i < stops.length; i++) {
     const stop = stops[i];
-    const xml = xmlDocs[i].window.document;
 
+    // The 'nstops' endpoint is route+stop specific, so every returned value
+    // already belongs to the requested route and stop.
     const arrivalTimes: number[] = [];
-    for (const prediction of xml.querySelectorAll('monitoredvehiclejourney')) {
-      // Validate that returned line/direction/stop match config.
-      const lineRef = prediction.querySelector('lineref');
-      if (!lineRef || lineRef.textContent != stop.routeName) {
-        continue;
+    for (const p of responses[i]) {
+      for (const value of p.values || []) {
+        if (typeof value.timestamp == 'number' && !isNaN(value.timestamp)) {
+          arrivalTimes.push(value.timestamp);
+        }
       }
-      const directionRef = prediction.querySelector('directionref');
-      if (!directionRef || directionRef.textContent != stop.direction) {
-        continue;
-      }
-      const stopPointRef = prediction.querySelector('stoppointref');
-      if (!stopPointRef || stopPointRef.textContent != stop.stopId) {
-        continue;
-      }
-
-      // Validate that there is an expected arrival time.
-      const expectedArrivalTime = prediction.querySelector('expectedarrivaltime');
-      if (!expectedArrivalTime) {
-        continue;
-      }
-      const epoch = Date.parse(expectedArrivalTime.textContent || '');
-      if (isNaN(epoch)) {
-        continue;
-      }
-
-      arrivalTimes.push(epoch);
     }
 
     // List times in ascending order.
-    arrivalTimes.sort();
+    arrivalTimes.sort((a, b) => a - b);
     // Only return three most recent times because predictions for more distant
     // times are typically very inaccurate.
     arrivalTimes.splice(3);

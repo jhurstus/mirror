@@ -6,16 +6,12 @@ import styles from './muni.module.css'
 import { Response } from '@/pages/api/modules/muni/muni';
 
 export type MuniProps = {
-  // 511 developer key used to fetch transit prediction data.  See:
-  // https://511.org/open-data/token
-  developerKey: string;
-  // Public transit agency from which to retrieve data from 511.
-  // http://api.511.org/transit/gtfsoperators?api_key=[your_key] for a list of
-  // supported values.
+  // Public transit agency from which to retrieve data from UmoIQ.  This is the
+  // agency id used in the UmoIQ request path, e.g. 'sfmta-cis' for SF Muni.
   agency?: string;
-  // List of 511 routeName+direction+stopIds for which to show arrival predictions.
+  // List of routeName+stopId pairs for which to show arrival predictions.
   // For example:
-  // [{routeName: 'J', direction: 'IB', stopId: '13463'}, ...]
+  // [{routeName: 'J', stopId: '3995'}, ...]
   stops: [RouteConfig, ...RouteConfig[]];
   // Time in milliseconds between prediction updates.
   updateInterval?: number;
@@ -25,23 +21,20 @@ export type MuniProps = {
   // greater than 'updateInterval'.
   dataAgeLimit?: number;
   // Whether to update arrival times locally based on the last prediction times
-  // received from 511.
+  // received from UmoIQ.
   // True: Counts down arrival times between 'updateInterval' refreshes.
-  // False: Only updates arrival times with values directly retrieved from 511.
+  // False: Only updates arrival times with values directly retrieved from UmoIQ.
   localCountdown?: boolean;
   // Duration in milliseconds for animating in new prediction data.
   animationDuration?: number;
 };
 
-// See:
-// http://api.511.org/transit/stops?api_key=[your_key]&operator_id=[operator_id]
-// ... for a list of stops for a given agency/operator.  See:
-// https://api.511.org/transit/StopMonitoring?api_key=[your_key]&stopcode=[stop_id]&agency=[operator_id]
-// ... for a sample of routeName (<LineRef>) and direction (<DirectionRef>) values
-// for a given stop.
+// 'routeName' is the UmoIQ route id (e.g. 'J', '48') and 'stopId' is the UmoIQ
+// internal stop id (e.g. '3995'), as used in the request path:
+// https://api.prd-1.iq.live.umoiq.com/v2.0/riders/agencies/[agency]/nstops/[routeName]:[stopId]/predictions
+// The stop id is direction-specific, so no separate direction is needed.
 export type RouteConfig = {
   routeName: string;
-  direction: string;
   stopId: string;
 };
 
@@ -49,8 +42,7 @@ export type RouteConfig = {
 type Nullable<T> = T | null;
 
 export default function Muni({
-  developerKey,
-  agency = 'SF',
+  agency = 'sfmta-cis',
   stops,
   updateInterval = 1000 * 20,
   dataAgeLimit = 1000 * 60 * 1,
@@ -64,7 +56,7 @@ export default function Muni({
   useEffect(() => {
     function fetchMuniData() {
       fetch(
-        `/api/modules/muni/muni?key=${developerKey}&agency=${agency}&stops=${encodeURIComponent(JSON.stringify(stops))}`)
+        `/api/modules/muni/muni?agency=${agency}&stops=${encodeURIComponent(JSON.stringify(stops))}`)
         .then((res) => res.json())
         .then((json) => {
           setLastUpdatedTimestamp(Date.now());
@@ -92,7 +84,7 @@ export default function Muni({
       window.clearInterval(fetchMuniDataIntervalId);
       window.clearInterval(localCountdownIntervalId);
     };
-  }, [agency, developerKey, localCountdown, stops, updateInterval]);
+  }, [agency, localCountdown, stops, updateInterval]);
 
   // Hide UI when data is missing or stale.
   if (!data) return <></>;
