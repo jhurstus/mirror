@@ -84,8 +84,12 @@ export default function Clock() {
 
   return (
     <div>
-      <div className={styles.date}>{formatDate(dateTime)}</div>
-      <div className={styles.time}>{formatTime(dateTime)}</div>
+      {/* Server-rendered time can legitimately differ from client time at
+          hydration due to clock progression/skew, so suppress the resulting
+          hydration mismatch warning.  The effect below immediately re-renders
+          with the client's current time on mount. */}
+      <div className={styles.date} suppressHydrationWarning>{formatDate(dateTime)}</div>
+      <div className={styles.time} suppressHydrationWarning>{formatTime(dateTime)}</div>
     </div>
   )
 }
