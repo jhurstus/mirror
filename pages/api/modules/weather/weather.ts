@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { Weather, LatLng } from '@/app/lib/weather/response_schemas';
 import getVisualCrossingWeatherData from '@/app/lib/weather/visual_crossing';
 import getTomorrowIOWeatherData from '@/app/lib/weather/tomorrow_io';
+import getGoogleWeatherData from '@/app/lib/weather/google_weather';
 import { getPurpleAirWeatherData } from '@/app/lib/weather/purple_air';
 import { getWeatherUndergroundData } from '@/app/lib/weather/weather_underground';
 
@@ -9,11 +10,16 @@ import { getWeatherUndergroundData } from '@/app/lib/weather/weather_underground
 export type Params = {
   address: string;
   // Weather provider selection - defaults to Tomorrow.io
-  weatherProvider?: 'tomorrow.io' | 'visual-crossing';
+  weatherProvider?: 'tomorrow.io' | 'visual-crossing' | 'google-weather';
   // Tomorrow.io API key
   tomorrowIOApiKey?: string;
   // Visual Crossing API key (legacy/fallback)
   visualCrossingApiKey?: string;
+  // Google Maps Platform API key with the Weather API enabled
+  googleMapsApiKey?: string;
+  // Lat/lng of the forecast location, required by the google-weather
+  // provider, which does not geocode 'address'
+  latLng?: LatLng;
   // Weather Underground Personal Weather Station ("PWS") API key
   weatherUndergroundApiKey?: string;
   // Weather Underground personal weather station ID from which to pull data
@@ -49,8 +55,11 @@ export default async function handler(
     } else if (provider === 'visual-crossing' && params.visualCrossingApiKey) {
       weatherPromise = getVisualCrossingWeatherData(
         params.address, params.visualCrossingApiKey, NETWORK_TIMEOUT);
+    } else if (provider === 'google-weather' && params.googleMapsApiKey && params.latLng) {
+      weatherPromise = getGoogleWeatherData(
+        params.latLng, params.googleMapsApiKey, NETWORK_TIMEOUT);
     } else {
-      throw new Error('No valid weather provider configured. Provide either tomorrowIOApiKey or visualCrossingApiKey.');
+      throw new Error('No valid weather provider configured. Provide tomorrowIOApiKey, visualCrossingApiKey, or googleMapsApiKey+latLng.');
     }
 
     let weatherUndergroundPromise;
@@ -117,7 +126,7 @@ function validateRequestParams(req: NextApiRequest): Params {
 
   // Weather provider configuration
   if (typeof req.query['weatherProvider'] == 'string') {
-    params.weatherProvider = req.query['weatherProvider'] as 'tomorrow.io' | 'visual-crossing';
+    params.weatherProvider = req.query['weatherProvider'] as 'tomorrow.io' | 'visual-crossing' | 'google-weather';
   }
   if (typeof req.query['tomorrowIOApiKey'] == 'string') {
     params.tomorrowIOApiKey = req.query['tomorrowIOApiKey'];
@@ -125,10 +134,14 @@ function validateRequestParams(req: NextApiRequest): Params {
   if (typeof req.query['visualCrossingApiKey'] == 'string') {
     params.visualCrossingApiKey = req.query['visualCrossingApiKey'];
   }
+  if (typeof req.query['googleMapsApiKey'] == 'string') {
+    params.googleMapsApiKey = req.query['googleMapsApiKey'];
+  }
+  params.latLng = queryParamToLatLng(req.query['latLng']);
 
   // Validate at least one weather provider key is present
-  if (!params.tomorrowIOApiKey && !params.visualCrossingApiKey) {
-    throw new Error('missing required parameter: either "tomorrowIOApiKey" or "visualCrossingApiKey"');
+  if (!params.tomorrowIOApiKey && !params.visualCrossingApiKey && !params.googleMapsApiKey) {
+    throw new Error('missing required parameter: one of "tomorrowIOApiKey", "visualCrossingApiKey", or "googleMapsApiKey"');
   }
 
   if (typeof req.query['weatherUndergroundApiKey'] == 'string') {

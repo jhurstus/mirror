@@ -8,14 +8,20 @@ import { generatePrecipitationSVG } from "./precipitation_graph";
 
 export type WeatherProps = {
   // Weather provider to use (defaults to 'tomorrow.io')
-  weatherProvider?: 'tomorrow.io' | 'visual-crossing';
+  weatherProvider?: 'tomorrow.io' | 'visual-crossing' | 'google-weather';
   // Tomorrow.io API key. A key can be obtained from https://www.tomorrow.io/
   tomorrowIOApiKey?: string;
   // Visual Crossing API key (legacy/fallback). A key can be obtained from
   // https://www.visualcrossing.com/
   visualCrossingApiKey?: string;
+  // Google Maps Platform API key with the Weather API enabled. See
+  // https://developers.google.com/maps/documentation/weather
+  googleMapsApiKey?: string;
   // Address (or lat,lng) for which weather data should be displayed.
   address: string;
+  // Lat/lng for which weather data should be displayed. Required by the
+  // 'google-weather' provider, which does not geocode 'address'.
+  latLng?: LatLng;
   // Weather Underground API key and station ID for hyper-local current
   // conditions.  Falls back to forecast provider data if unavailable.
   weatherUndergroundApiKey?: string;
@@ -44,7 +50,9 @@ export default function Weather({
   weatherProvider = 'tomorrow.io',
   tomorrowIOApiKey,
   visualCrossingApiKey,
+  googleMapsApiKey,
   address,
+  latLng,
   weatherUndergroundApiKey,
   weatherUndergroundStationId,
   updateInterval = 1000 * 60 * 5, // 5 minutes
@@ -67,6 +75,12 @@ export default function Weather({
       }
       if (visualCrossingApiKey) {
         url.searchParams.append('visualCrossingApiKey', visualCrossingApiKey);
+      }
+      if (googleMapsApiKey) {
+        url.searchParams.append('googleMapsApiKey', googleMapsApiKey);
+      }
+      if (latLng) {
+        url.searchParams.append('latLng', JSON.stringify(latLng));
       }
       if (weatherUndergroundApiKey && weatherUndergroundStationId) {
         url.searchParams.append('weatherUndergroundApiKey', weatherUndergroundApiKey);
@@ -95,7 +109,9 @@ export default function Weather({
     weatherProvider,
     tomorrowIOApiKey,
     visualCrossingApiKey,
+    googleMapsApiKey,
     address,
+    latLng,
     weatherUndergroundApiKey,
     weatherUndergroundStationId,
     updateInterval,

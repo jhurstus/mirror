@@ -30,10 +30,12 @@ export default function Home() {
           homeCity='San
            Francisco' />
         <Weather
-          weatherProvider="tomorrow.io"
+          weatherProvider="google-weather"
           tomorrowIOApiKey={process.env.NEXT_PUBLIC_WEATHER_TOMORROW_IO_API_KEY!}
           visualCrossingApiKey={process.env.NEXT_PUBLIC_WEATHER_VISUAL_CROSSING_API_KEY}
+          googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY!}
           address={process.env.NEXT_PUBLIC_WEATHER_ADDRESS!}
+          latLng={JSON.parse(process.env.NEXT_PUBLIC_WEATHER_LATLNG!)}
           weatherUndergroundApiKey={process.env.NEXT_PUBLIC_WEATHER_UNDERGROUND_API_KEY!}
           weatherUndergroundStationId={process.env.NEXT_PUBLIC_WEATHER_UNDERGROUND_STATION_ID!}
           purpleAirReadKey={process.env.NEXT_PUBLIC_WEATHER_PURPLE_AIR_READ_KEY!}
