@@ -38,6 +38,7 @@ export default function Home() {
           latLng={JSON.parse(process.env.NEXT_PUBLIC_WEATHER_LATLNG!)}
           weatherUndergroundApiKey={process.env.NEXT_PUBLIC_WEATHER_UNDERGROUND_API_KEY!}
           weatherUndergroundStationId={process.env.NEXT_PUBLIC_WEATHER_UNDERGROUND_STATION_ID!}
+          updateInterval={1000 * 60 * 20}
           purpleAirReadKey={process.env.NEXT_PUBLIC_WEATHER_PURPLE_AIR_READ_KEY!}
           purpleAirNorthwestLatLng={JSON.parse(process.env.NEXT_PUBLIC_WEATHER_PURPLE_AIR_NORTHWEST_LATLNG!)}
           purpleAirSoutheastLatLng={JSON.parse(process.env.NEXT_PUBLIC_WEATHER_PURPLE_AIR_SOUTHEAST_LATLNG!)} />

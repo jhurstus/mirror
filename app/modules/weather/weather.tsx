@@ -28,7 +28,10 @@ export type WeatherProps = {
   weatherUndergroundStationId?: string;
   // Time in milliseconds between weather updates.  Visual Crossing provides
   // 1000 requests per day free.  To stay under that quota, choose a config
-  // value of at least ((24*60*60*1000)/1000)==86400.
+  // value of at least ((24*60*60*1000)/1000)==86400.  Google Weather allows
+  // only 100 requests per day per endpoint free, and each update hits each
+  // endpoint once, so choose a value of at least
+  // ((24*60*60*1000)/100)==864000 for the 'google-weather' provider.
   updateInterval?: number;
   // The maximum age in milliseconds for which a forecast will be displayed.  If
   // data cannot be updated before this limit, the UI will be hidden, so as to
@@ -95,10 +98,13 @@ export default function Weather({
       fetch(url)
         .then((res) => res.json())
         .then((json) => {
-          setLastUpdatedTimestamp(Date.now());
+          if (!json.weather) {
+            throw new Error(json.error || 'weather API returned no data');
+          }
           const weather = json.weather as Weather;
           weather.precipitationGraph = generatePrecipitationSVG(weather.precipitationInfo);
           setWeather(weather);
+          setLastUpdatedTimestamp(Date.now());
         }).catch((e) => console.error(e));
     }
     fetchWeather();
