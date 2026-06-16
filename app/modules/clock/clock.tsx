@@ -54,8 +54,12 @@ function getNextUpdateDelayMilliseconds(): number {
  * Shows a clock rendering the current day, date, and time.
  */
 export default function Clock() {
-  const currentDate = new Date();
-  const [dateTime, setDateTime] = useState(currentDate);
+  // This page is statically prerendered, so a date computed during render would
+  // be the build-time moment frozen into the static HTML (and, with hydration
+  // mismatches suppressed, never replaced).  Start empty and fill in the live
+  // time on the client after mount, so the display always reflects the client's
+  // current time rather than whenever the build last ran.
+  const [dateTime, setDateTime] = useState<Date | null>(null);
 
   // Stop/start clock update loop on Component un/mount.
   useEffect(() => {
@@ -84,12 +88,10 @@ export default function Clock() {
 
   return (
     <div>
-      {/* Server-rendered time can legitimately differ from client time at
-          hydration due to clock progression/skew, so suppress the resulting
-          hydration mismatch warning.  The effect below immediately re-renders
-          with the client's current time on mount. */}
-      <div className={styles.date} suppressHydrationWarning>{formatDate(dateTime)}</div>
-      <div className={styles.time} suppressHydrationWarning>{formatTime(dateTime)}</div>
+      {/* Empty until mounted on the client (see above); the effect then keeps
+          these in sync with the client's current time. */}
+      <div className={styles.date}>{dateTime ? formatDate(dateTime) : ''}</div>
+      <div className={styles.time}>{dateTime ? formatTime(dateTime) : ''}</div>
     </div>
   )
 }
