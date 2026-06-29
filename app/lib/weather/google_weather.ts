@@ -147,8 +147,14 @@ export default async function getGoogleWeatherData(
         'currentConditions:lookup', {}, latLng, googleMapsApiKey, abortController.signal),
       fetchGoogleWeatherJson<GoogleHourlyForecastResponse>(
         'forecast/hours:lookup', { hours: '24', pageSize: '24' }, latLng, googleMapsApiKey, abortController.signal),
+      // Over-fetch daily forecasts: Google's daily "day" runs on a 7am-7am
+      // (14:00Z) boundary, so before 7am Pacific forecastDays[0] is still
+      // "yesterday".  Requesting only 3 days then drops the day-after-tomorrow
+      // from the window.  findDailyEntry picks the right dates by displayDate;
+      // it just needs them present.  pageSize matches days so this stays one
+      // request (no extra quota cost).
       fetchGoogleWeatherJson<GoogleDailyForecastResponse>(
-        'forecast/days:lookup', { days: '3', pageSize: '3' }, latLng, googleMapsApiKey, abortController.signal),
+        'forecast/days:lookup', { days: '5', pageSize: '5' }, latLng, googleMapsApiKey, abortController.signal),
     ]);
   } finally {
     clearTimeout(timeoutId);
