@@ -26,12 +26,7 @@ export type WeatherProps = {
   // conditions.  Falls back to forecast provider data if unavailable.
   weatherUndergroundApiKey?: string;
   weatherUndergroundStationId?: string;
-  // Time in milliseconds between weather updates.  Visual Crossing provides
-  // 1000 requests per day free.  To stay under that quota, choose a config
-  // value of at least ((24*60*60*1000)/1000)==86400.  Google Weather allows
-  // only 100 requests per day per endpoint free, and each update hits each
-  // endpoint once, so choose a value of at least
-  // ((24*60*60*1000)/100)==864000 for the 'google-weather' provider.
+  // Time in milliseconds between weather updates.
   updateInterval?: number;
   // The maximum age in milliseconds for which a forecast will be displayed.  If
   // data cannot be updated before this limit, the UI will be hidden, so as to

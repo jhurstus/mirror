@@ -151,8 +151,7 @@ export default async function getGoogleWeatherData(
       // (14:00Z) boundary, so before 7am Pacific forecastDays[0] is still
       // "yesterday".  Requesting only 3 days then drops the day-after-tomorrow
       // from the window.  findDailyEntry picks the right dates by displayDate;
-      // it just needs them present.  pageSize matches days so this stays one
-      // request (no extra quota cost).
+      // it just needs them present.
       fetchGoogleWeatherJson<GoogleDailyForecastResponse>(
         'forecast/days:lookup', { days: '5', pageSize: '5' }, latLng, googleMapsApiKey, abortController.signal),
     ]);
