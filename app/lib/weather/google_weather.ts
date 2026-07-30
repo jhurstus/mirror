@@ -68,8 +68,8 @@ interface GoogleForecastDay {
   daytimeForecast: {
     weatherCondition: GoogleWeatherCondition;
   };
-  feelsLikeMaxTemperature: GoogleTemperature;
-  feelsLikeMinTemperature: GoogleTemperature;
+  maxTemperature: GoogleTemperature;
+  minTemperature: GoogleTemperature;
   sunEvents: {
     sunriseTime?: string;
     sunsetTime?: string;
@@ -197,7 +197,7 @@ function isForecastDataValid(
   hourly: GoogleHourlyForecastResponse,
   daily: GoogleDailyForecastResponse
 ): boolean {
-  if (!current || !current.weatherCondition || !current.feelsLikeTemperature) {
+  if (!current || !current.weatherCondition || !current.temperature) {
     console.warn('missing Google Weather current conditions');
     return false;
   }
@@ -237,15 +237,15 @@ function googleResponseToWeatherData(
   const days = daily.forecastDays!;
 
   // Current conditions
-  const temperature = Math.round(current.feelsLikeTemperature.degrees);
+  const temperature = Math.round(current.temperature.degrees);
   const windSpeed = Math.round(current.wind.speed.value);
   const cloudCover = Math.round(current.cloudCover);
   const uvIndex = current.uvIndex;
 
   // Today's daily forecast
   const today = findDailyEntry(days, 0)!;
-  const low = Math.round(today.feelsLikeMinTemperature.degrees);
-  const high = Math.round(today.feelsLikeMaxTemperature.degrees);
+  const low = Math.round(today.minTemperature.degrees);
+  const high = Math.round(today.maxTemperature.degrees);
 
   // Generate summary from weather condition types
   const summary = generateSummary(current, hours);
@@ -293,8 +293,8 @@ function googleResponseToWeatherData(
     if (!entry) break;
     const date = entry.displayDate;
     shortForecast.push({
-      low: Math.round(entry.feelsLikeMinTemperature.degrees),
-      high: Math.round(entry.feelsLikeMaxTemperature.degrees),
+      low: Math.round(entry.minTemperature.degrees),
+      high: Math.round(entry.maxTemperature.degrees),
       icon: getIconFromConditionType(entry.daytimeForecast.weatherCondition.type),
       day: new Date(date.year, date.month - 1, date.day).toLocaleDateString('en-US', { weekday: 'short' }),
     });
